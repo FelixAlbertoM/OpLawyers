@@ -51,7 +51,6 @@ builder.Services.AddSingleton<IEmailSender<Usuario>, IdentityNoOpEmailSender>();
 var app = builder.Build();
 
 
-
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
