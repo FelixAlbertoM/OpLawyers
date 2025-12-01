@@ -6,6 +6,8 @@ using OpLawyers.Components.Account;
 using OpLawyers.DAL;
 using OpLawyers.Models;
 using OpLawyers.Services;
+using OpLawyers.Components;
+
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -61,12 +63,38 @@ else
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
-app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
-app.UseHttpsRedirection();
 
+app.UseHttpsRedirection();
+app.UseStaticFiles();
 app.UseAntiforgery();
 
-app.MapStaticAssets();
+
+
+app.Use(async (context, next) =>
+{
+    if (context.User.Identity?.IsAuthenticated == true)
+    {
+        var userManager = context.RequestServices.GetRequiredService<UserManager<Usuario>>();
+        var clientesService = context.RequestServices.GetRequiredService<ClientesService>();
+
+        var user = await userManager.GetUserAsync(context.User);
+        if (user != null)
+        {
+            var cliente = await clientesService.ObtenerClientePorUsuarioIdAsync(user.Id);
+
+            if (cliente != null && cliente.Estado == "bloqueado")
+            {
+                var signInManager = context.RequestServices.GetRequiredService<SignInManager<Usuario>>();
+                await signInManager.SignOutAsync();
+                context.Response.Redirect("/Account/Login");
+                return;
+            }
+        }
+    }
+
+    await next();
+});
+
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
