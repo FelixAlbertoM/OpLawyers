@@ -1,0 +1,380 @@
+﻿@page "/casos/admin"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using OpLawyers.Models
+@using OpLawyers.Services
+@attribute [Authorize(Roles = "Administrador")]
+@inject CasosService CasosService
+@inject ClientesService ClientesService
+@inject UserManager<Usuario> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@rendermode InteractiveServer
+
+<PageTitle>Gestión de Casos - Admin</PageTitle>
+
+<div class="page-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <h2>Gestión de Casos</h2>
+            </div>
+            <div class="col-12">
+                <a href="/">Inicio</a>
+                <a href="">Gestión de Casos</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Administración de Casos</h2>
+        </div>
+        @if (loading)
+        {
+            <p>Cargando...</p>
+        }
+        else
+        {
+            <div class="d-flex justify-content-end mb-3">
+                <button class="btn-op" @onclick="MostrarFormularioNuevo">Nuevo Caso</button>
+            </div>
+
+            @if (mostrarFormulario)
+            {
+                <div class="card mb-3 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="mb-3">@(casoEditando == null ? "Nuevo Caso" : "Editar Caso")</h5>
+
+                        <EditForm Model="nuevoCaso" OnValidSubmit="GuardarCaso">
+                            <DataAnnotationsValidator />
+                            <ValidationSummary />
+
+                            <div class="mb-3">
+                                <label>Cliente</label>
+                                <select class="form-select" @bind="nuevoCaso.ClienteId">
+                                    <option value="0">-- Seleccionar Cliente --</option>
+                                    @foreach (var c in clientes)
+                                    {
+                                        <option value="@c.ClienteId">
+                                            @c.Nombre @c.Apellido - @c.Usuario.Email
+                                        </option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Descripción:</label>
+                                <InputTextArea class="form-control" @bind-Value="nuevoCaso.Descripcion" rows="4" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Estado:</label>
+                                <InputSelect class="form-select" @bind-Value="nuevoCaso.Estado">
+                                    <option value="Abierto">Abierto</option>
+                                    <option value="En Proceso">En Proceso</option>
+                                    <option value="Cerrado">Cerrado</option>
+                                    <option value="Archivado">Archivado</option>
+                                </InputSelect>
+                            </div>
+
+                            <button type="submit" class="btn btn-success">Guardar</button>
+                            <button type="button" class="btn btn-secondary" @onclick="CancelarFormulario">Cancelar</button>
+                        </EditForm>
+                    </div>
+                </div>
+            }
+
+            @if (mostrarFormularioDetalle && casoSeleccionado != null)
+            {
+                <div class="card mb-3 shadow-sm">
+                    <div class="card-body">
+                        <h5>Agregar Detalle al Caso #@casoSeleccionado.CasoId</h5>
+
+                        <EditForm Model="nuevoDetalle" OnValidSubmit="GuardarDetalle">
+                            <DataAnnotationsValidator />
+
+                            <div class="mb-3">
+                                <label class="form-label">Descripción:</label>
+                                <InputTextArea class="form-control" @bind-Value="nuevoDetalle.Descripcion" rows="3" />
+                                <ValidationMessage For="@(() => nuevoDetalle.Descripcion)" />
+                            </div>
+
+                            <button type="submit" class="btn btn-success">Agregar Detalle</button>
+                            <button type="button" class="btn btn-secondary" @onclick="CancelarFormularioDetalle">Cancelar</button>
+                        </EditForm>
+                    </div>
+                </div>
+            }
+
+            @if (mensaje != null)
+            {
+                <div class="alert @(esError ? "alert-danger" : "alert-success") alert-dismissible fade show">
+                    @mensaje
+                    <button type="button" class="btn-close" @onclick="() => mensaje = null"></button>
+                </div>
+            }
+
+            <table class="table table-op table-striped align-middle">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Cliente</th>
+                        <th>Fecha Apertura</th>
+                        <th>Estado</th>
+                        <th>Descripción</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var caso in casos)
+                    {
+                        <tr>
+                            <td>@caso.CasoId</td>
+                            <td>@caso.Cliente.Nombre @caso.Cliente.Apellido</td>
+                            <td>@caso.FechaApertura.ToShortDateString()</td>
+                            <td>
+                                <span class="badge @ObtenerClaseBadgeEstado(caso.Estado)">
+                                    @caso.Estado
+                                </span>
+                            </td>
+                            <td>@(caso.Descripcion.Length > 50 ? caso.Descripcion.Substring(0, 50) + "..." : caso.Descripcion)</td>
+                            <td>
+                                <button class="btn btn-sm btn-info" @onclick="() => VerDetalles(caso.CasoId)">Ver</button>
+                                <button class="btn btn-sm btn-warning" @onclick="() => EditarCaso(caso)">Editar</button>
+                                <button class="btn btn-sm btn-success" @onclick="() => MostrarFormularioDetalleParaCaso(caso)">+ Detalle</button>
+                            </td>
+                        </tr>
+
+                        @if (casoExpandido == caso.CasoId)
+                        {
+                            <tr>
+                                <td colspan="6">
+                                    <div class="case-details-box">
+                                        <h6>Detalles del Caso</h6>
+                                        <p><strong>Descripción completa:</strong> @caso.Descripcion</p>
+                                        <p><strong>Cliente:</strong> @caso.Cliente.Nombre @caso.Cliente.Apellido</p>
+                                        <p><strong>Email:</strong> @caso.Cliente.Usuario?.Email</p>
+
+                                        @if (caso.CasoDetalles != null && caso.CasoDetalles.Any())
+                                        {
+                                            <h6 class="mt-3">Historial de Actualizaciones:</h6>
+                                            <ul class="list-group">
+                                                @foreach (var detalle in caso.CasoDetalles.OrderByDescending(d => d.Fecha))
+                                                {
+                                                    <li class="list-group-item">
+                                                        <strong>@detalle.Fecha.ToString("dd/MM/yyyy HH:mm"):</strong> @detalle.Descripcion
+                                                    </li>
+                                                }
+                                            </ul>
+                                        }
+                                        else
+                                        {
+                                            <p class="text-muted mt-3">No hay actualizaciones en el historial.</p>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+
+@code {
+    private List<Caso> casos = new();
+    private List<Cliente> clientes = new();
+    private Caso nuevoCaso = new();
+    private CasoDetalle nuevoDetalle = new();
+    private Caso? casoEditando;
+    private Caso? casoSeleccionado;
+    private bool mostrarFormulario = false;
+    private bool mostrarFormularioDetalle = false;
+    private bool loading = true;
+    private string? mensaje;
+    private bool esError;
+    private int? casoExpandido;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarDatos();
+        loading = false;
+    }
+
+    private async Task CargarDatos()
+    {
+        casos = await CasosService.ListarTodosCasosAsync();
+        clientes = await ClientesService.ListarClientesAsync();
+    }
+
+    private void MostrarFormularioNuevo()
+    {
+        nuevoCaso = new Caso { FechaApertura = DateTime.Now, Estado = "Abierto" };
+        casoEditando = null;
+        mostrarFormulario = true;
+    }
+
+    private void EditarCaso(Caso caso)
+    {
+        casoEditando = caso;
+        nuevoCaso = new Caso
+        {
+            CasoId = caso.CasoId,
+            ClienteId = caso.ClienteId,
+            AdministradorId = caso.AdministradorId,
+            FechaApertura = caso.FechaApertura,
+            Estado = caso.Estado,
+            Descripcion = caso.Descripcion
+        };
+        mostrarFormulario = true;
+    }
+
+    private async Task GuardarCaso()
+    {
+        try
+        {
+            bool resultado;
+
+            if (casoEditando == null)
+            {
+                if (nuevoCaso.ClienteId == 0)
+                {
+                    mensaje = "Debe seleccionar un cliente.";
+                    esError = true;
+                    return;
+                }
+
+                resultado = await CasosService.CrearCasoAsync(nuevoCaso);
+            }
+            else
+            {
+                var casoExistente = await CasosService.ObtenerCasoPorIdAsync(nuevoCaso.CasoId);
+                if (casoExistente != null)
+                {
+                    casoExistente.Descripcion = nuevoCaso.Descripcion;
+                    casoExistente.Estado = nuevoCaso.Estado;
+                    casoExistente.ClienteId = nuevoCaso.ClienteId;
+                    casoExistente.AdministradorId = nuevoCaso.AdministradorId;
+
+                    resultado = await CasosService.ActualizarCasoAsync(casoExistente);
+                }
+                else
+                {
+                    mensaje = "Caso no encontrado.";
+                    esError = true;
+                    return;
+                }
+            }
+
+            if (resultado)
+            {
+                mensaje = casoEditando == null ? "Caso creado exitosamente." : "Caso actualizado exitosamente.";
+                esError = false;
+                mostrarFormulario = false;
+                casoEditando = null;
+                await CargarDatos();
+            }
+            else
+            {
+                mensaje = "Error al guardar el caso.";
+                esError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            mensaje = $"Error: {ex.Message}";
+            esError = true;
+        }
+    }
+
+    private void CancelarFormulario()
+    {
+        mostrarFormulario = false;
+        casoEditando = null;
+        nuevoCaso = new Caso();
+    }
+
+    private void MostrarFormularioDetalleParaCaso(Caso caso)
+    {
+        casoSeleccionado = caso;
+        nuevoDetalle = new CasoDetalle { CasoId = caso.CasoId, Fecha = DateTime.Now, Descripcion = "" };
+        mostrarFormularioDetalle = true;
+    }
+
+    private void CancelarFormularioDetalle()
+    {
+        mostrarFormularioDetalle = false;
+        casoSeleccionado = null;
+        nuevoDetalle = new CasoDetalle();
+    }
+
+    private async Task GuardarDetalle()
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(nuevoDetalle.Descripcion))
+            {
+                mensaje = "La descripción del detalle es requerida.";
+                esError = true;
+                return;
+            }
+
+            if (await CasosService.AgregarDetalleAsync(nuevoDetalle))
+            {
+                mensaje = "Detalle agregado exitosamente.";
+                esError = false;
+                mostrarFormularioDetalle = false;
+                casoSeleccionado = null;
+                nuevoDetalle = new CasoDetalle();
+
+                await CargarDatos();
+            }
+            else
+            {
+                mensaje = "Error al agregar el detalle.";
+                esError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            mensaje = $"Error: {ex.Message}";
+            esError = true;
+        }
+    }
+
+    private async Task VerDetalles(int casoId)
+    {
+        if (casoExpandido == casoId)
+        {
+            casoExpandido = null;
+        }
+        else
+        {
+            casoExpandido = casoId;
+            var caso = await CasosService.ObtenerCasoPorIdAsync(casoId);
+            if (caso != null)
+            {
+                var index = casos.FindIndex(c => c.CasoId == casoId);
+                if (index >= 0)
+                {
+                    casos[index] = caso;
+                }
+            }
+        }
+    }
+
+    private string ObtenerClaseBadgeEstado(string estado)
+    {
+        return estado switch
+        {
+            "Abierto" => "bg-primary",
+            "En Proceso" => "bg-warning text-dark",
+            "Cerrado" => "bg-success",
+            "Archivado" => "bg-secondary",
+            _ => "bg-info"
+        };
+    }
+}

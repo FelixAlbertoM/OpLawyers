@@ -1,0 +1,321 @@
+﻿@page "/horarios/admin"
+@using Microsoft.AspNetCore.Authorization
+@using OpLawyers.Models
+@using OpLawyers.Services
+@attribute [Authorize(Roles = "Administrador")]
+@inject HorariosService HorariosService
+@rendermode InteractiveServer
+
+<PageTitle>Gestión de Horarios - OpLawyers</PageTitle>
+
+<div class="page-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <h2>Gestión de Horarios</h2>
+            </div>
+            <div class="col-12">
+                <a href="/">Inicio</a>
+                <a href="">Horarios</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Horarios Disponibles</h2>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-12">
+                <button class="btn-kanun-primary mr-3" @onclick="MostrarFormularioNuevo">
+                    <i class="fa fa-plus mr-2"></i>Nuevo Horario
+                </button>
+                <button class="btn-kanun" @onclick="CrearHorariosPredeterminados">
+                    <i class="fa fa-clock mr-2"></i>Crear Horarios Predeterminados
+                </button>
+            </div>
+        </div>
+
+        @if (mostrarFormulario)
+        {
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="form-kanun">
+                        <h4 class="mb-4">@(horarioEditando == null ? "Nuevo Horario" : "Editar Horario")</h4>
+                        <EditForm Model="nuevoHorario" OnValidSubmit="GuardarHorario">
+                            <DataAnnotationsValidator />
+
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label>
+                                        <i class="fa fa-calendar mr-2"></i>Día de la Semana
+                                    </label>
+                                    <InputSelect class="form-control" @bind-Value="nuevoHorario.DiaSemana">
+                                        <option value="1">Lunes</option>
+                                        <option value="2">Martes</option>
+                                        <option value="3">Miércoles</option>
+                                        <option value="4">Jueves</option>
+                                        <option value="5">Viernes</option>
+                                        <option value="6">Sábado</option>
+                                        <option value="7">Domingo</option>
+                                    </InputSelect>
+                                    <ValidationMessage For="@(() => nuevoHorario.DiaSemana)" />
+                                </div>
+
+                                <div class="col-md-4 mb-3">
+                                    <label>
+                                        <i class="fa fa-clock mr-2"></i>Hora Inicio
+                                    </label>
+                                    <InputDate Type="InputDateType.Time" class="form-control" @bind-Value="horaInicioDateTime" />
+                                </div>
+
+                                <div class="col-md-4 mb-3">
+                                    <label>
+                                        <i class="fa fa-clock mr-2"></i>Hora Fin
+                                    </label>
+                                    <InputDate Type="InputDateType.Time" class="form-control" @bind-Value="horaFinDateTime" />
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-8 mb-3">
+                                    <label>
+                                        <i class="fa fa-comment mr-2"></i>Descripción (Opcional)
+                                    </label>
+                                    <InputText class="form-control" @bind-Value="nuevoHorario.Descripcion" placeholder="Ej: Mañana, Tarde" />
+                                </div>
+
+                                <div class="col-md-4 mb-3">
+                                    <label>&nbsp;</label>
+                                    <div class="form-check">
+                                        <InputCheckbox class="form-check-input" @bind-Value="nuevoHorario.Activo" id="checkActivo" />
+                                        <label class="form-check-label" for="checkActivo">
+                                            Activo
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-12">
+                                    <button type="submit" class="btn-kanun-primary mr-3">
+                                        <i class="fa fa-save mr-2"></i>Guardar
+                                    </button>
+                                    <button type="button" class="btn-kanun" @onclick="CancelarFormulario">
+                                        <i class="fa fa-times mr-2"></i>Cancelar
+                                    </button>
+                                </div>
+                            </div>
+                        </EditForm>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (mensaje != null)
+        {
+            <div class="alert-kanun @(esError ? "error" : "success") mb-4">
+                <i class="fa @(esError ? "fa-exclamation-circle" : "fa-check-circle") mr-2"></i>
+                @mensaje
+            </div>
+        }
+
+        <div class="row">
+            @for (int dia = 1; dia <= 7; dia++)
+            {
+                var diaSemana = dia;
+                var horariosDelDia = horarios.Where(h => h.DiaSemana == diaSemana).ToList();
+
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="case-card">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4 class="mb-0">
+                                <i class="fa fa-calendar-day mr-2"></i>@ObtenerNombreDia(diaSemana)
+                            </h4>
+                            <span class="badge badge-abierto">@horariosDelDia.Count horarios</span>
+                        </div>
+
+                        @if (!horariosDelDia.Any())
+                        {
+                            <p class="text-muted text-center py-4">Sin horarios configurados</p>
+                        }
+                        else
+                        {
+                            <div style="max-height: 400px; overflow-y: auto;">
+                                @foreach (var horario in horariosDelDia.OrderBy(h => h.HoraInicio))
+                                {
+                                    <div class="mb-3 p-3" style="background: #000000; border: 1px solid #aa9166; border-radius: 5px;">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <strong style="color: #aa9166; font-size: 16px;">
+                                                    <i class="fa fa-clock mr-2"></i>@horario.HorarioFormateado
+                                                </strong>
+                                                @if (!string.IsNullOrEmpty(horario.Descripcion))
+                                                {
+                                                    <p class="mb-0 mt-2" style="color: #ffffff; font-size: 14px;">
+                                                        @horario.Descripcion
+                                                    </p>
+                                                }
+                                                @if (!horario.Activo)
+                                                {
+                                                    <span class="badge badge-cerrado mt-2">Inactivo</span>
+                                                }
+                                            </div>
+                                            <button class="btn btn-sm" style="background: #dc3545; color: #fff; border: none; padding: 5px 10px;" @onclick="() => EliminarHorario(horario.HorarioId)">
+                                                <i class="fa fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+
+@code {
+    private List<HorarioDisponible> horarios = new();
+    private HorarioDisponible nuevoHorario = new();
+    private HorarioDisponible? horarioEditando;
+    private bool mostrarFormulario = false;
+    private string? mensaje;
+    private bool esError;
+
+    private DateTime horaInicioDateTime = DateTime.Today.AddHours(8);
+    private DateTime horaFinDateTime = DateTime.Today.AddHours(9);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarHorarios();
+    }
+
+    private async Task CargarHorarios()
+    {
+        horarios = await HorariosService.ListarHorariosAsync();
+    }
+
+    private void MostrarFormularioNuevo()
+    {
+        nuevoHorario = new HorarioDisponible { DiaSemana = 1, Activo = true };
+        horarioEditando = null;
+        mostrarFormulario = true;
+        horaInicioDateTime = DateTime.Today.AddHours(8);
+        horaFinDateTime = DateTime.Today.AddHours(9);
+    }
+
+    private async Task GuardarHorario()
+    {
+        try
+        {
+            nuevoHorario.HoraInicio = horaInicioDateTime.TimeOfDay;
+            nuevoHorario.HoraFin = horaFinDateTime.TimeOfDay;
+
+            if (nuevoHorario.HoraFin <= nuevoHorario.HoraInicio)
+            {
+                mensaje = "La hora de fin debe ser mayor que la hora de inicio.";
+                esError = true;
+                return;
+            }
+
+            bool resultado;
+            if (horarioEditando == null)
+            {
+                resultado = await HorariosService.CrearHorarioAsync(nuevoHorario);
+                mensaje = resultado ? "Horario creado exitosamente." : "Error: El horario ya existe.";
+            }
+            else
+            {
+                resultado = await HorariosService.ActualizarHorarioAsync(nuevoHorario);
+                mensaje = resultado ? "Horario actualizado exitosamente." : "Error al actualizar.";
+            }
+
+            esError = !resultado;
+
+            if (resultado)
+            {
+                mostrarFormulario = false;
+                await CargarHorarios();
+            }
+        }
+        catch (Exception ex)
+        {
+            mensaje = $"Error: {ex.Message}";
+            esError = true;
+        }
+    }
+
+    private void CancelarFormulario()
+    {
+        mostrarFormulario = false;
+        horarioEditando = null;
+        nuevoHorario = new HorarioDisponible();
+    }
+
+    private async Task EliminarHorario(int horarioId)
+    {
+        try
+        {
+            if (await HorariosService.EliminarHorarioAsync(horarioId))
+            {
+                mensaje = "Horario eliminado/desactivado exitosamente.";
+                esError = false;
+                await CargarHorarios();
+            }
+            else
+            {
+                mensaje = "Error al eliminar el horario.";
+                esError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            mensaje = $"Error: {ex.Message}";
+            esError = true;
+        }
+    }
+
+    private async Task CrearHorariosPredeterminados()
+    {
+        try
+        {
+            if (await HorariosService.CrearHorariosPredeterminadosAsync())
+            {
+                mensaje = "Horarios predeterminados creados: Lunes a Sábado, 8:00 AM - 5:00 PM (cada hora).";
+                esError = false;
+                await CargarHorarios();
+            }
+            else
+            {
+                mensaje = "Los horarios ya existen o hubo un error.";
+                esError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            mensaje = $"Error: {ex.Message}";
+            esError = true;
+        }
+    }
+
+    private string ObtenerNombreDia(int dia)
+    {
+        return dia switch
+        {
+            1 => "Lunes",
+            2 => "Martes",
+            3 => "Miércoles",
+            4 => "Jueves",
+            5 => "Viernes",
+            6 => "Sábado",
+            7 => "Domingo",
+            _ => "Desconocido"
+        };
+    }
+}

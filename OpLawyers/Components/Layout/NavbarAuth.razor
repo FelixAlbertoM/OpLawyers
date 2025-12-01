@@ -1,0 +1,25 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<AuthorizeView>
+    <Authorized>
+        <form action="Account/Logout" method="post" style="display: inline;">
+            <AntiforgeryToken />
+            <input type="hidden" name="ReturnUrl" value="@currentUrl" />
+            <button type="submit" class="btn">Cerrar Sesión</button>
+        </form>
+    </Authorized>
+    <NotAuthorized>
+        <a class="btn" href="Account/Login">Iniciar Sesión</a>
+    </NotAuthorized>
+</AuthorizeView>
+@code {
+    private string? currentUrl;
+
+    protected override void OnInitialized()
+    {
+        currentUrl = Navigation.ToBaseRelativePath(Navigation.Uri);
+    }
+
+}

@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Identity;
-using OpLawyers.Data;
+using OpLawyers.Models;
 
 namespace OpLawyers.Components.Account
 {
@@ -49,7 +49,7 @@ namespace OpLawyers.Components.Account
         public void RedirectToCurrentPageWithStatus(string message, HttpContext context)
             => RedirectToWithStatus(CurrentPath, message, context);
 
-        public void RedirectToInvalidUser(UserManager<ApplicationUser> userManager, HttpContext context)
+        public void RedirectToInvalidUser(UserManager<Usuario> userManager, HttpContext context)
             => RedirectToWithStatus("Account/InvalidUser", $"Error: Unable to load user with ID '{userManager.GetUserId(context.User)}'.", context);
     }
 }
