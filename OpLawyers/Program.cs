@@ -5,6 +5,7 @@ using OpLawyers.Components;
 using OpLawyers.Components.Account;
 using OpLawyers.DAL;
 using OpLawyers.Models;
+using OpLawyers.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,26 +18,31 @@ builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
 
-builder.Services.AddAuthentication(options =>
-    {
-        options.DefaultScheme = IdentityConstants.ApplicationScheme;
-        options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
-    })
-    .AddIdentityCookies();
-
 var connectionString = builder.Configuration.GetConnectionString("SqlConStr") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+
+builder.Services.AddScoped<ClientesService>();
+builder.Services.AddScoped<CasosService>();
+builder.Services.AddScoped<CitasService>();
+builder.Services.AddScoped<HorariosService>();
+
 builder.Services.AddDbContext<Contexto>(options =>
     options.UseSqlServer(connectionString));
+
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddIdentityCore<Usuario>(options =>
+builder.Services.AddIdentity<Usuario, IdentityRole>(options =>
     {
-        options.SignIn.RequireConfirmedAccount = true;
-        options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
+        options.SignIn.RequireConfirmedAccount = false;
+        options.Password.RequireDigit = true;
+        options.Password.RequireLowercase = true;
+        options.Password.RequireUppercase = true;
+        options.Password.RequireNonAlphanumeric = true;
+        options.Password.RequiredLength = 6;
     })
-    .AddEntityFrameworkStores<Contexto>()
-    .AddSignInManager()
-    .AddDefaultTokenProviders();
+.AddEntityFrameworkStores<Contexto>()
+.AddDefaultTokenProviders();
+
+builder.Services.AddAuthorizationBuilder();
 
 builder.Services.AddSingleton<IEmailSender<Usuario>, IdentityNoOpEmailSender>();
 
