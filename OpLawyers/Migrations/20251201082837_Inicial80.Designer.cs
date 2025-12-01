@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OpLawyers.DAL;
 
@@ -11,9 +12,11 @@ using OpLawyers.DAL;
 namespace OpLawyers.Migrations
 {
     [DbContext(typeof(Contexto))]
-    partial class ContextoModelSnapshot : ModelSnapshot
+    [Migration("20251201082837_Inicial80")]
+    partial class Inicial80
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -52,14 +55,14 @@ namespace OpLawyers.Migrations
                         new
                         {
                             Id = "1",
-                            ConcurrencyStamp = "",
+                            ConcurrencyStamp = "7cc299fb-0e13-494a-bde8-cf67dd393edd",
                             Name = "Administrador",
                             NormalizedName = "ADMINISTRADOR"
                         },
                         new
                         {
                             Id = "2",
-                            ConcurrencyStamp = "",
+                            ConcurrencyStamp = "99c395cc-7a4f-4104-9f94-a593f9aab7b3",
                             Name = "Cliente",
                             NormalizedName = "CLIENTE"
                         });
@@ -154,13 +157,8 @@ namespace OpLawyers.Migrations
                     b.HasData(
                         new
                         {
-                            UserId = "1",
+                            UserId = "admin-001",
                             RoleId = "1"
-                        },
-                        new
-                        {
-                            UserId = "2",
-                            RoleId = "2"
                         });
                 });
 
@@ -205,14 +203,14 @@ namespace OpLawyers.Migrations
                     b.HasIndex("UsuarioId")
                         .IsUnique();
 
-                    b.ToTable("Administradores", (string)null);
+                    b.ToTable("Administradores");
 
                     b.HasData(
                         new
                         {
                             AdministradorId = 1,
                             Nombre = "Administrador Principal",
-                            UsuarioId = "1"
+                            UsuarioId = "admin-001"
                         });
                 });
 
@@ -249,7 +247,7 @@ namespace OpLawyers.Migrations
 
                     b.HasIndex("ClienteId");
 
-                    b.ToTable("Casos", (string)null);
+                    b.ToTable("Casos");
                 });
 
             modelBuilder.Entity("OpLawyers.Models.CasoDetalle", b =>
@@ -275,7 +273,7 @@ namespace OpLawyers.Migrations
 
                     b.HasIndex("CasoId");
 
-                    b.ToTable("CasoDetalles", (string)null);
+                    b.ToTable("CasoDetalles");
                 });
 
             modelBuilder.Entity("OpLawyers.Models.Cita", b =>
@@ -301,7 +299,7 @@ namespace OpLawyers.Migrations
 
                     b.HasIndex("ClienteId");
 
-                    b.ToTable("Citas", (string)null);
+                    b.ToTable("Citas");
                 });
 
             modelBuilder.Entity("OpLawyers.Models.CitaDetalle", b =>
@@ -337,7 +335,7 @@ namespace OpLawyers.Migrations
                     b.HasIndex("HorarioId", "Fecha", "Bloqueado")
                         .HasDatabaseName("IX_CitaDetalle_Disponibilidad");
 
-                    b.ToTable("CitaDetalles", (string)null);
+                    b.ToTable("CitaDetalles");
                 });
 
             modelBuilder.Entity("OpLawyers.Models.Cliente", b =>
@@ -381,7 +379,7 @@ namespace OpLawyers.Migrations
                     b.HasIndex("UsuarioId")
                         .IsUnique();
 
-                    b.ToTable("Clientes", (string)null);
+                    b.ToTable("Clientes");
                 });
 
             modelBuilder.Entity("OpLawyers.Models.HorarioDisponible", b =>
@@ -414,7 +412,7 @@ namespace OpLawyers.Migrations
                         .IsUnique()
                         .HasDatabaseName("IX_HorarioDisponible_DiaHora");
 
-                    b.ToTable("HorariosDisponibles", (string)null);
+                    b.ToTable("HorariosDisponibles");
                 });
 
             modelBuilder.Entity("OpLawyers.Models.Usuario", b =>
@@ -484,35 +482,19 @@ namespace OpLawyers.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "1",
+                            Id = "admin-001",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "",
-                            Email = "admin@example.com",
+                            ConcurrencyStamp = "2721b52e-a839-4118-be5b-552622bed1d2",
+                            Email = "admin@admin.com",
                             EmailConfirmed = true,
                             LockoutEnabled = false,
-                            NormalizedEmail = "ADMIN@EXAMPLE.COM",
-                            NormalizedUserName = "ADMIN",
-                            PasswordHash = "AQAAAAIAAYagAAAAEFckMSwoaIoT+i8P1dhWC0texCWXJM9vYogzvLShiaAto2Zb6owofXi1mYEpVcRZXA==",
+                            NormalizedEmail = "ADMIN@ADMIN.COM",
+                            NormalizedUserName = "ADMIN@ADMIN.COM",
+                            PasswordHash = "AQAAAAIAAYagAAAAEFZy2e46GRLetl2A0SDPrfp6s51nYSXGj00QJb8ux7HGIe1kofHWfgz3UP5TBQHXVw==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "",
+                            SecurityStamp = "28f11be0-72b4-4dc0-b481-dc3a1d67d7aa",
                             TwoFactorEnabled = false,
-                            UserName = "admin"
-                        },
-                        new
-                        {
-                            Id = "2",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "",
-                            Email = "user@example.com",
-                            EmailConfirmed = true,
-                            LockoutEnabled = false,
-                            NormalizedEmail = "USER@EXAMPLE.COM",
-                            NormalizedUserName = "USER",
-                            PasswordHash = "AQAAAAIAAYagAAAAEK+QewBCKQMQoqUkUtmVEdI7MpR/XuYJ/0mXH0qKCf+PspVsJ7/naNTI3TqhdJ4b7Q==",
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "",
-                            TwoFactorEnabled = false,
-                            UserName = "user"
+                            UserName = "admin@admin.com"
                         });
                 });
 
