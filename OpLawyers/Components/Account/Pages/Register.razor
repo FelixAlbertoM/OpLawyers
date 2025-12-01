@@ -6,64 +6,127 @@
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.WebUtilities
 @using OpLawyers.Models
+@using OpLawyers.Services
+@using OpLawyers.DAL
 
 @inject UserManager<Usuario> UserManager
+@inject RoleManager<IdentityRole> RoleManager
 @inject IUserStore<Usuario> UserStore
 @inject SignInManager<Usuario> SignInManager
 @inject IEmailSender<Usuario> EmailSender
 @inject ILogger<Register> Logger
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
+@inject ClientesService ClientesService
+@inject Contexto Contexto
 
-<PageTitle>Register</PageTitle>
+<PageTitle>Registrar</PageTitle>
 
-<h1>Register</h1>
+<link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet">
+<link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+<link href="css/auth-forms.css" rel="stylesheet">
+<section class="auth-section" style="background: #fafafa;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-9 col-lg-7">
+                <div class="register-wrap">
+                    <h3 class="mb-4 text-center">Crear Nueva Cuenta</h3>
 
-<div class="row">
-    <div class="col-lg-6">
-        <StatusMessage Message="@Message" />
-        <EditForm Model="Input" method="post" OnValidSubmit="RegisterUser" FormName="register">
-            <DataAnnotationsValidator />
-            <h2>Create a new account.</h2>
-            <hr />
-            <ValidationSummary class="text-danger" role="alert" />
-            <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.Email" id="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
-                <label for="Input.Email">Email</label>
-                <ValidationMessage For="() => Input.Email" class="text-danger" />
+                    <StatusMessage Message="@Message" />
+
+                    <EditForm Model="Input" method="post" OnValidSubmit="RegisterUser" FormName="register">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary class="text-danger mb-3" role="alert" />
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-4">
+                                    <InputText @bind-Value="Input.Nombre" id="Input.Nombre" class="form-control"
+                                               aria-required="true" placeholder="Nombre" maxlength="100" />
+                                    <ValidationMessage For="() => Input.Nombre" class="text-danger" />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-4">
+                                    <InputText @bind-Value="Input.Apellido" id="Input.Apellido" class="form-control"
+                                               aria-required="true" placeholder="Apellido" maxlength="100" />
+                                    <ValidationMessage For="() => Input.Apellido" class="text-danger" />
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-group mb-4">
+                                    <InputText @bind-Value="Input.Email" id="Input.Email" class="form-control"
+                                               autocomplete="username" aria-required="true"
+                                               placeholder="correo@ejemplo.com" />
+                                    <ValidationMessage For="() => Input.Email" class="text-danger" />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-4">
+                                    <InputText type="password" @bind-Value="Input.Password" id="Input.Password"
+                                               class="form-control" autocomplete="new-password"
+                                               aria-required="true" placeholder="Contraseña" />
+                                    <ValidationMessage For="() => Input.Password" class="text-danger" />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-4">
+                                    <InputText type="password" @bind-Value="Input.ConfirmPassword" id="Input.ConfirmPassword"
+                                               class="form-control" autocomplete="new-password"
+                                               aria-required="true" placeholder="Confirmar Contraseña" />
+                                    <ValidationMessage For="() => Input.ConfirmPassword" class="text-danger" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="password-requirements">
+                            <strong>Requisitos de contraseña:</strong>
+                            <ul>
+                                <li>Al menos 6 caracteres</li>
+                                <li>Al menos una letra mayúscula</li>
+                                <li>Al menos una letra minúscula</li>
+                                <li>Al menos un número</li>
+                                <li>Al menos un carácter especial (!@@#$%^&*)</li>
+                            </ul>
+                        </div>
+
+                        <div class="form-group d-flex mt-4">
+                            <button type="submit" class="btn btn-primary rounded submit p-3 w-100">
+                                Registrarse
+                            </button>
+                        </div>
+                    </EditForm>
+
+                    <div class="social-wrap">
+                        <p class="mt-4">
+                            ¿Ya tienes una cuenta? <a href="Account/Login">Inicia sesión aquí</a>
+                        </p>
+                    </div>
+                </div>
             </div>
-            <div class="form-floating mb-3">
-                <InputText type="password" @bind-Value="Input.Password" id="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
-                <label for="Input.Password">Password</label>
-                <ValidationMessage For="() => Input.Password" class="text-danger" />
-            </div>
-            <div class="form-floating mb-3">
-                <InputText type="password" @bind-Value="Input.ConfirmPassword" id="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
-                <label for="Input.ConfirmPassword">Confirm Password</label>
-                <ValidationMessage For="() => Input.ConfirmPassword" class="text-danger" />
-            </div>
-            <button type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
-        </EditForm>
+        </div>
     </div>
-    <div class="col-lg-4 col-lg-offset-2">
-        <section>
-            <h3>Use another service to register.</h3>
-            <hr />
-            <ExternalLoginPicker />
-        </section>
-    </div>
-</div>
+</section>
 
 @code {
     private IEnumerable<IdentityError>? identityErrors;
-
+    private string? customError;
     [SupplyParameterFromForm]
     private InputModel Input { get; set; } = default!;
 
     [SupplyParameterFromQuery]
     private string? ReturnUrl { get; set; }
 
-    private string? Message => identityErrors is null ? null : $"Error: {string.Join(", ", identityErrors.Select(error => error.Description))}";
+    private string? Message
+    {
+        get
+        {
+            if (!string.IsNullOrEmpty(customError))
+                return customError;
+
+            return identityErrors is null ? null : $"Error: {string.Join(", ", identityErrors.Select(error => error.Description))}";
+        }
+    }
 
     protected override void OnInitialized()
     {
@@ -82,12 +145,55 @@
         if (!result.Succeeded)
         {
             identityErrors = result.Errors;
+            customError = null;
             return;
         }
 
         Logger.LogInformation("User created a new account with password.");
 
         var userId = await UserManager.GetUserIdAsync(user);
+
+        var roleExists = await RoleManager.RoleExistsAsync("Cliente");
+        if (!roleExists)
+        {
+            await RoleManager.CreateAsync(new IdentityRole("Cliente"));
+        }
+        await UserManager.AddToRoleAsync(user, "Cliente");
+
+        try
+        {
+            var cedulaGenerada = $"AUTO-{userId.Substring(0, 8)}";
+
+            var cliente = new Cliente
+            {
+                UsuarioId = userId,
+                Cedula = cedulaGenerada,
+                Nombre = Input.Nombre,
+                Apellido = Input.Apellido,
+                Telefono = null,
+                Estado = "activo"
+            };
+
+            var clienteCreado = await ClientesService.CrearClienteAsync(cliente);
+
+            if (!clienteCreado)
+            {
+                await UserManager.DeleteAsync(user);
+                customError = "Error: No se pudo completar el registro. Por favor, intente nuevamente.";
+                Logger.LogError("Failed to create Cliente record for user {UserId}", userId);
+                return;
+            }
+
+            Logger.LogInformation("Cliente record created for user {UserId}", userId);
+        }
+        catch (Exception ex)
+        {
+            await UserManager.DeleteAsync(user);
+            customError = "Error: Ocurrió un problema al crear su perfil. Por favor, intente nuevamente.";
+            Logger.LogError(ex, "Exception while creating Cliente record for user {UserId}", userId);
+            return;
+        }
+
         var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
         code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
         var callbackUrl = NavigationManager.GetUriWithQueryParameters(
@@ -133,20 +239,30 @@
 
     private sealed class InputModel
     {
-        [Required]
-        [EmailAddress]
+        [Required(ErrorMessage = "El nombre es requerido")]
+        [StringLength(100, ErrorMessage = "El nombre no puede exceder 100 caracteres")]
+        [Display(Name = "Nombre")]
+        public string Nombre { get; set; } = "";
+
+        [Required(ErrorMessage = "El apellido es requerido")]
+        [StringLength(100, ErrorMessage = "El apellido no puede exceder 100 caracteres")]
+        [Display(Name = "Apellido")]
+        public string Apellido { get; set; } = "";
+
+        [Required(ErrorMessage = "El email es requerido")]
+        [EmailAddress(ErrorMessage = "Formato de email inválido")]
         [Display(Name = "Email")]
         public string Email { get; set; } = "";
 
-        [Required]
-        [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
+        [Required(ErrorMessage = "La contraseña es requerida")]
+        [StringLength(100, ErrorMessage = "La {0} debe tener al menos {2} caracteres y máximo {1} caracteres.", MinimumLength = 6)]
         [DataType(DataType.Password)]
-        [Display(Name = "Password")]
+        [Display(Name = "Contraseña")]
         public string Password { get; set; } = "";
 
         [DataType(DataType.Password)]
-        [Display(Name = "Confirm password")]
-        [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
+        [Display(Name = "Confirmar contraseña")]
+        [Compare("Password", ErrorMessage = "La contraseña y la confirmación no coinciden.")]
         public string ConfirmPassword { get; set; } = "";
     }
 }
