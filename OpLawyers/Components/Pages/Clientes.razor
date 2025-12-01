@@ -1,0 +1,250 @@
+﻿@page "/clientes"
+@using Microsoft.AspNetCore.Authorization
+@using OpLawyers.Models
+@using OpLawyers.Services
+@attribute [Authorize(Roles = "Administrador")]
+@inject ClientesService ClientesService
+@rendermode InteractiveServer
+
+<PageTitle>Gestión de Clientes</PageTitle>
+
+<div class="page-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <h2>Gestión de Clientes</h2>
+            </div>
+            <div class="col-12">
+                <a href="/">Inicio</a>
+                <a href="">Clientes</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Lista de Clientes</h2>
+        </div>
+        <h3>Gestión de Clientes</h3>
+
+        @if (loading)
+        {
+            <p>Cargando clientes...</p>
+        }
+        else
+        {
+            @if (mensaje != null)
+            {
+                <div class="alert @(esError ? "alert-danger" : "alert-success") alert-dismissible fade show" role="alert">
+                    @mensaje
+                    <button type="button" class="btn-close" @onclick="() => mensaje = null"></button>
+                </div>
+            }
+
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre Completo</th>
+                        <th>Email</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var cliente in clientes)
+                    {
+                        <tr class="@(cliente.Estado == "bloqueado" ? "table-danger" : "")">
+                            <td>@cliente.ClienteId</td>
+                            <td>@cliente.Nombre @cliente.Apellido</td>
+                            <td>@cliente.Usuario?.Email</td>
+                            <td>
+                                <span class="badge @(cliente.Estado == "activo" ? "bg-success" : "bg-danger")">
+                                    @cliente.Estado
+                                </span>
+                            </td>
+                            <td>
+                                @if (cliente.Estado == "activo")
+                                {
+                                    <button class="btn btn-sm btn-danger" @onclick="() => BloquearCliente(cliente.ClienteId)">
+                                        Bloquear
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-sm btn-success" @onclick="() => DesbloquearCliente(cliente.ClienteId)">
+                                        Desbloquear
+                                    </button>
+                                }
+                                <button class="btn btn-sm btn-info" @onclick="() => VerDetalles(cliente.ClienteId)">
+                                    Ver Detalles
+                                </button>
+                            </td>
+                        </tr>
+                        @if (clienteExpandido == cliente.ClienteId && clienteDetallado != null)
+                        {
+                            <tr>
+                                <td colspan="6">
+                                    <div class="p-3 bg-light">
+                                        <h6>Información Detallada</h6>
+                                        <p><strong>Nombre Completo:</strong> @clienteDetallado.Nombre @clienteDetallado.Apellido</p>
+                                        <p><strong>Usuario ID:</strong> @clienteDetallado.UsuarioId</p>
+                                        <p><strong>Email:</strong> @clienteDetallado.Usuario?.Email</p>
+                                        <p><strong>Estado:</strong> <span class="badge @(clienteDetallado.Estado == "activo" ? "bg-success" : "bg-danger")">@clienteDetallado.Estado</span></p>
+
+                                        <h6 class="mt-3">Casos Asociados: @(clienteDetallado.Casos?.Count ?? 0)</h6>
+                                        @if (clienteDetallado.Casos != null && clienteDetallado.Casos.Any())
+                                        {
+                                            <div class="table-responsive">
+                                                <table class="table table-sm">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>ID</th>
+                                                            <th>Estado</th>
+                                                            <th>Fecha Apertura</th>
+                                                            <th>Descripción</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach (var caso in clienteDetallado.Casos.Take(10))
+                                                        {
+                                                            <tr>
+                                                                <td>#@caso.CasoId</td>
+                                                                <td><span class="badge bg-info">@caso.Estado</span></td>
+                                                                <td>@caso.FechaApertura.ToShortDateString()</td>
+                                                                <td>@(caso.Descripcion.Length > 50 ? caso.Descripcion.Substring(0, 50) + "..." : caso.Descripcion)</td>
+                                                            </tr>
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            @if (clienteDetallado.Casos.Count > 10)
+                                            {
+                                                <p class="text-muted"><small>Mostrando 10 de @clienteDetallado.Casos.Count casos</small></p>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <p class="text-muted">No tiene casos asociados.</p>
+                                        }
+
+                                        <h6 class="mt-3">Citas Asociadas: @(clienteDetallado.Citas?.Count ?? 0)</h6>
+                                        @if (clienteDetallado.Citas != null && clienteDetallado.Citas.Any())
+                                        {
+                                            <div class="table-responsive">
+                                                <table class="table table-sm">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>ID</th>
+                                                            <th>Estado</th>
+                                                            <th>Fecha</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach (var cita in clienteDetallado.Citas.Take(10))
+                                                        {
+                                                            <tr>
+                                                                <td>#@cita.CitaId</td>
+                                                                <td><span class="badge bg-warning">@cita.Estado</span></td>
+                                                                <td>@cita.Fecha.ToShortDateString()</td>
+                                                            </tr>
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            @if (clienteDetallado.Citas.Count > 10)
+                                            {
+                                                <p class="text-muted"><small>Mostrando 10 de @clienteDetallado.Citas.Count citas</small></p>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <p class="text-muted">No tiene citas asociadas.</p>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+@code {
+    
+    private List<Cliente> clientes = new();
+    private Cliente? clienteDetallado;
+    private bool loading = true;
+    private string? mensaje;
+    private bool esError;
+    private int? clienteExpandido;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarClientes();
+        loading = false;
+    }
+
+    private async Task CargarClientes()
+    {
+        clientes = await ClientesService.ListarClientesAsync();
+    }
+
+    private async Task BloquearCliente(int clienteId)
+    {
+        if (await ClientesService.BloquearClienteAsync(clienteId))
+        {
+            mensaje = "Cliente bloqueado exitosamente. El usuario no podrá acceder al sistema.";
+            esError = false;
+            await CargarClientes();
+
+            if (clienteExpandido == clienteId)
+            {
+                clienteDetallado = await ClientesService.ObtenerClientePorIdAsync(clienteId);
+            }
+        }
+        else
+        {
+            mensaje = "Error al bloquear el cliente.";
+            esError = true;
+        }
+    }
+
+    private async Task DesbloquearCliente(int clienteId)
+    {
+        if (await ClientesService.DesbloquearClienteAsync(clienteId))
+        {
+            mensaje = "Cliente desbloqueado exitosamente. El usuario puede acceder nuevamente al sistema.";
+            esError = false;
+            await CargarClientes();
+
+            if (clienteExpandido == clienteId)
+            {
+                clienteDetallado = await ClientesService.ObtenerClientePorIdAsync(clienteId);
+            }
+        }
+        else
+        {
+            mensaje = "Error al desbloquear el cliente.";
+            esError = true;
+        }
+    }
+
+    private async Task VerDetalles(int clienteId)
+    {
+        if (clienteExpandido == clienteId)
+        {
+            clienteExpandido = null;
+            clienteDetallado = null;
+        }
+        else
+        {
+            clienteExpandido = clienteId;
+            clienteDetallado = await ClientesService.ObtenerClientePorIdAsync(clienteId);
+        }
+    }
+
+}
