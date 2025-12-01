@@ -205,7 +205,7 @@ namespace OpLawyers.Migrations
                     b.HasIndex("UsuarioId")
                         .IsUnique();
 
-                    b.ToTable("Administradores", (string)null);
+                    b.ToTable("Administradores");
 
                     b.HasData(
                         new
@@ -249,7 +249,7 @@ namespace OpLawyers.Migrations
 
                     b.HasIndex("ClienteId");
 
-                    b.ToTable("Casos", (string)null);
+                    b.ToTable("Casos");
                 });
 
             modelBuilder.Entity("OpLawyers.Models.CasoDetalle", b =>
@@ -275,7 +275,7 @@ namespace OpLawyers.Migrations
 
                     b.HasIndex("CasoId");
 
-                    b.ToTable("CasoDetalles", (string)null);
+                    b.ToTable("CasoDetalles");
                 });
 
             modelBuilder.Entity("OpLawyers.Models.Cita", b =>
@@ -301,7 +301,7 @@ namespace OpLawyers.Migrations
 
                     b.HasIndex("ClienteId");
 
-                    b.ToTable("Citas", (string)null);
+                    b.ToTable("Citas");
                 });
 
             modelBuilder.Entity("OpLawyers.Models.CitaDetalle", b =>
@@ -337,7 +337,7 @@ namespace OpLawyers.Migrations
                     b.HasIndex("HorarioId", "Fecha", "Bloqueado")
                         .HasDatabaseName("IX_CitaDetalle_Disponibilidad");
 
-                    b.ToTable("CitaDetalles", (string)null);
+                    b.ToTable("CitaDetalles");
                 });
 
             modelBuilder.Entity("OpLawyers.Models.Cliente", b =>
@@ -381,7 +381,7 @@ namespace OpLawyers.Migrations
                     b.HasIndex("UsuarioId")
                         .IsUnique();
 
-                    b.ToTable("Clientes", (string)null);
+                    b.ToTable("Clientes");
                 });
 
             modelBuilder.Entity("OpLawyers.Models.HorarioDisponible", b =>
@@ -414,7 +414,7 @@ namespace OpLawyers.Migrations
                         .IsUnique()
                         .HasDatabaseName("IX_HorarioDisponible_DiaHora");
 
-                    b.ToTable("HorariosDisponibles", (string)null);
+                    b.ToTable("HorariosDisponibles");
                 });
 
             modelBuilder.Entity("OpLawyers.Models.Usuario", b =>

@@ -12,8 +12,8 @@ using OpLawyers.DAL;
 namespace OpLawyers.Migrations
 {
     [DbContext(typeof(Contexto))]
-    [Migration("20251201082837_Inicial80")]
-    partial class Inicial80
+    [Migration("20251201094309_inicial100")]
+    partial class inicial100
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -55,14 +55,14 @@ namespace OpLawyers.Migrations
                         new
                         {
                             Id = "1",
-                            ConcurrencyStamp = "7cc299fb-0e13-494a-bde8-cf67dd393edd",
+                            ConcurrencyStamp = "",
                             Name = "Administrador",
                             NormalizedName = "ADMINISTRADOR"
                         },
                         new
                         {
                             Id = "2",
-                            ConcurrencyStamp = "99c395cc-7a4f-4104-9f94-a593f9aab7b3",
+                            ConcurrencyStamp = "",
                             Name = "Cliente",
                             NormalizedName = "CLIENTE"
                         });
@@ -157,8 +157,13 @@ namespace OpLawyers.Migrations
                     b.HasData(
                         new
                         {
-                            UserId = "admin-001",
+                            UserId = "1",
                             RoleId = "1"
+                        },
+                        new
+                        {
+                            UserId = "2",
+                            RoleId = "2"
                         });
                 });
 
@@ -210,7 +215,7 @@ namespace OpLawyers.Migrations
                         {
                             AdministradorId = 1,
                             Nombre = "Administrador Principal",
-                            UsuarioId = "admin-001"
+                            UsuarioId = "1"
                         });
                 });
 
@@ -482,19 +487,35 @@ namespace OpLawyers.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "admin-001",
+                            Id = "1",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "2721b52e-a839-4118-be5b-552622bed1d2",
-                            Email = "admin@admin.com",
+                            ConcurrencyStamp = "",
+                            Email = "admin@example.com",
                             EmailConfirmed = true,
                             LockoutEnabled = false,
-                            NormalizedEmail = "ADMIN@ADMIN.COM",
-                            NormalizedUserName = "ADMIN@ADMIN.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEFZy2e46GRLetl2A0SDPrfp6s51nYSXGj00QJb8ux7HGIe1kofHWfgz3UP5TBQHXVw==",
+                            NormalizedEmail = "ADMIN@EXAMPLE.COM",
+                            NormalizedUserName = "ADMIN",
+                            PasswordHash = "AQAAAAIAAYagAAAAEFckMSwoaIoT+i8P1dhWC0texCWXJM9vYogzvLShiaAto2Zb6owofXi1mYEpVcRZXA==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "28f11be0-72b4-4dc0-b481-dc3a1d67d7aa",
+                            SecurityStamp = "",
                             TwoFactorEnabled = false,
-                            UserName = "admin@admin.com"
+                            UserName = "admin"
+                        },
+                        new
+                        {
+                            Id = "2",
+                            AccessFailedCount = 0,
+                            ConcurrencyStamp = "",
+                            Email = "user@example.com",
+                            EmailConfirmed = true,
+                            LockoutEnabled = false,
+                            NormalizedEmail = "USER@EXAMPLE.COM",
+                            NormalizedUserName = "USER",
+                            PasswordHash = "AQAAAAIAAYagAAAAEK+QewBCKQMQoqUkUtmVEdI7MpR/XuYJ/0mXH0qKCf+PspVsJ7/naNTI3TqhdJ4b7Q==",
+                            PhoneNumberConfirmed = false,
+                            SecurityStamp = "",
+                            TwoFactorEnabled = false,
+                            UserName = "user"
                         });
                 });
 
