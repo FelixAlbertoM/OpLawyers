@@ -1,0 +1,208 @@
+﻿@page "/casos/consultar"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using OpLawyers.Models
+@using OpLawyers.Services
+@attribute [Authorize(Roles = "Cliente,Administrador")]
+@inject CasosService CasosService
+@inject ClientesService ClientesService
+@inject UserManager<Usuario> UserManager
+@inject AuthenticationStateProvider AuthProvider
+@rendermode InteractiveServer
+
+<PageTitle>Consultar Casos</PageTitle>
+
+<div class="page-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <h2>Consultar Casos</h2>
+            </div>
+            <div class="col-12">
+                <a href="/">Inicio</a>
+                <a href="">Consultar Casos</a>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="content-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Búsqueda De Casos</h2>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <label class="form-label">Buscar por ID de Caso:</label>
+                        <input type="number" class="form-control" @bind="casoIdBusqueda" placeholder="Ingrese el ID del caso" />
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button class="btn btn-primary w-100" @onclick="BuscarCaso">
+                            <i class="bi bi-search"></i> Buscar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @if (mensaje != null)
+        {
+            <div class="alert @(esError ? "alert-danger" : "alert-info") alert-dismissible fade show">
+                @mensaje
+                <button type="button" class="btn-close" @onclick="() => mensaje = null"></button>
+            </div>
+        }
+
+        @if (casoEncontrado != null)
+        {
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">📄 Detalles del Caso #@casoEncontrado.CasoId</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>ID de Caso:</strong> @casoEncontrado.CasoId</p>
+                            <p><strong>Estado:</strong> <span class="badge bg-info">@casoEncontrado.Estado</span></p>
+                            <p><strong>Fecha de Apertura:</strong> @casoEncontrado.FechaApertura.ToString("dd/MM/yyyy")</p>
+                            @if (esAdmin && casoEncontrado.Cliente != null)
+                            {
+                                <p><strong>Cliente:</strong> @casoEncontrado.Cliente.Nombre @casoEncontrado.Cliente.Apellido</p>
+                                <p><strong>Email Cliente:</strong> @casoEncontrado.Cliente.Usuario?.Email</p>
+                            }
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <h6 class="text-primary">Descripción del Caso:</h6>
+                    <p class="border p-3 bg-light">@casoEncontrado.Descripcion</p>
+
+                    <hr />
+
+                    <h6 class="text-primary">📑 Historial de Actualizaciones:</h6>
+                    @if (casoEncontrado.CasoDetalles == null || casoEncontrado.CasoDetalles.Count == 0)
+                    {
+                        <div class="alert alert-secondary">
+                            <i class="bi bi-info-circle"></i> No hay actualizaciones registradas para este caso.
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="list-group">
+                            @foreach (var detalle in casoEncontrado.CasoDetalles.OrderByDescending(d => d.Fecha))
+                            {
+                                <div class="list-group-item">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">
+                                            <i class="bi bi-calendar-event"></i> @detalle.Fecha.ToString("dd/MM/yyyy HH:mm")
+                                        </h6>
+                                    </div>
+                                    <p class="mb-1">@detalle.Descripcion</p>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+                <div class="card-footer">
+                    <button class="btn btn-secondary" @onclick="LimpiarBusqueda">
+                        <i class="bi bi-x-circle"></i> Limpiar
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+@code {
+    private List<Caso> casos = new();
+    private Caso? casoEncontrado;
+    private int? casoIdBusqueda;
+    private int clienteId;
+    private string? mensaje;
+    private bool esError;
+    private bool esAdmin;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var auth = await AuthProvider.GetAuthenticationStateAsync();
+        var user = auth.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            esAdmin = user.IsInRole("Administrador");
+
+            if (esAdmin)
+            {
+                casos = await CasosService.ListarTodosCasosAsync();
+            }
+            else
+            {
+                var usuario = await UserManager.GetUserAsync(user);
+                if (usuario != null)
+                {
+                    var cliente = await ClientesService.ObtenerClientePorUsuarioIdAsync(usuario.Id);
+                    if (cliente != null)
+                    {
+                        clienteId = cliente.ClienteId;
+                        casos = await CasosService.ConsultarCasosPorClienteAsync(clienteId);
+                    }
+                }
+            }
+        }
+    }
+
+    private async Task BuscarCaso()
+    {
+        mensaje = null;
+        casoEncontrado = null;
+
+        if (casoIdBusqueda == null || casoIdBusqueda <= 0)
+        {
+            mensaje = "Por favor, ingrese un ID de caso válido.";
+            esError = true;
+            return;
+        }
+        var caso = casos.FirstOrDefault(c => c.CasoId == casoIdBusqueda.Value);
+
+        if (caso == null)
+        {
+            if (esAdmin)
+            {
+                mensaje = $"No se encontró el caso con ID {casoIdBusqueda}.";
+            }
+            else
+            {
+                mensaje = $"No se encontró el caso con ID {casoIdBusqueda}. Verifica que el ID sea correcto y que el caso te pertenezca.";
+            }
+            esError = true;
+            return;
+        }
+        casoEncontrado = await CasosService.ObtenerCasoPorIdAsync(casoIdBusqueda.Value);
+
+        if (casoEncontrado == null)
+        {
+            mensaje = "Error al cargar los detalles del caso.";
+            esError = true;
+            return;
+        }
+        if (!esAdmin && casoEncontrado.ClienteId != clienteId)
+        {
+            mensaje = "No tienes permiso para ver este caso.";
+            esError = true;
+            casoEncontrado = null;
+            return;
+        }
+
+        mensaje = null;
+    }
+
+    private void LimpiarBusqueda()
+    {
+        casoIdBusqueda = null;
+        casoEncontrado = null;
+        mensaje = null;
+        esError = false;
+    }
+}
