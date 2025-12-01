@@ -36,29 +36,6 @@
                         </Authorized>
                     </AuthorizeView>
                 </div>
-
-
-                <div class="ml-auto d-flex align-items-center">
-                    <AuthorizeView Context="authContext">
-                        <Authorized>
-                            <span class="text-white mr-3">
-                                <i class="fas fa-user"></i> @authContext.User.Identity?.Name
-                            </span>
-                            <form action="Account/Logout" method="post" class="d-inline">
-                                <AntiforgeryToken />
-                                <input type="hidden" name="ReturnUrl" value="@currentUrl" />
-                                <button type="submit" class="btn btn-outline-light btn-sm">
-                                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
-                                </button>
-                            </form>
-                        </Authorized>
-                        <NotAuthorized>
-                            <a class="btn" href="Account/Login">
-                                <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
-                            </a>
-                        </NotAuthorized>
-                    </AuthorizeView>
-                </div>
             </div>
         </nav>
     </div>
