@@ -1,7 +1,390 @@
 ﻿@page "/"
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Inicio - OpLawyers</PageTitle>
 
-<h1>Hello, world!</h1>
+<style>
+    .content-wrapper {
+        background-color: #ffffff !important;
+    }
 
-Welcome to your new app.
+    .about, .service, .feature, .team, .faqs {
+        background-color: #ffffff !important;
+    }
+</style>
+<div id="carousel" class="carousel slide" data-ride="carousel">
+    <ol class="carousel-indicators">
+        <li data-target="#carousel" data-slide-to="0" class="active"></li>
+        <li data-target="#carousel" data-slide-to="1"></li>
+        <li data-target="#carousel" data-slide-to="2"></li>
+    </ol>
+    <div class="carousel-inner">
+        <div class="carousel-item active">
+            <img src="img/carousel-1.jpg" alt="Carousel Image">
+            <div class="carousel-caption">
+                <h1 class="animated fadeInLeft">Servicios Legales de Excelencia</h1>
+                <p class="animated fadeInRight">Comprometidos con la justicia y la defensa de tus derechos</p>
+                <AuthorizeView>
+                    <NotAuthorized>
+                        <a class="btn animated fadeInUp" href="Account/Register">Regístrate Ahora</a>
+                    </NotAuthorized>
+                    <Authorized>
+                        <a class="btn animated fadeInUp" href="/mis-casos">Ver Mis Casos</a>
+                    </Authorized>
+                </AuthorizeView>
+            </div>
+        </div>
+
+        <div class="carousel-item">
+            <img src="img/carousel-2.jpg" alt="Carousel Image">
+            <div class="carousel-caption">
+                <h1 class="animated fadeInLeft">Experiencia Legal Confiable</h1>
+                <p class="animated fadeInRight">Más de 20 años defendiendo tus intereses</p>
+                <AuthorizeView>
+                    <NotAuthorized>
+                        <a class="btn animated fadeInUp" href="Account/Login">Iniciar Sesión</a>
+                    </NotAuthorized>
+                    <Authorized>
+                        <a class="btn animated fadeInUp" href="/citas-cliente">Agendar Cita</a>
+                    </Authorized>
+                </AuthorizeView>
+            </div>
+        </div>
+
+        <div class="carousel-item">
+            <img src="img/carousel-3.jpg" alt="Carousel Image">
+            <div class="carousel-caption">
+                <h1 class="animated fadeInLeft">Protegemos Tu Futuro</h1>
+                <p class="animated fadeInRight">Asesoría legal profesional cuando más lo necesitas</p>
+            </div>
+        </div>
+    </div>
+
+    <a class="carousel-control-prev" href="#carousel" role="button" data-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="sr-only">Anterior</span>
+    </a>
+    <a class="carousel-control-next" href="#carousel" role="button" data-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="sr-only">Siguiente</span>
+    </a>
+</div>
+<div class="about">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-5 col-md-6">
+                <div class="about-img">
+                    <img src="img/about.jpg" alt="Image">
+                </div>
+            </div>
+            <div class="col-lg-7 col-md-6">
+                <div class="section-header">
+                    <h2>Acerca de OpLawyers</h2>
+                </div>
+                <div class="about-text">
+                    <p>
+                        Somos una firma legal comprometida con la excelencia en el servicio. Nuestro equipo de
+                        abogados experimentados está dedicado a proporcionar soluciones legales efectivas y
+                        personalizadas para cada cliente.
+                    </p>
+                    <p>
+                        Con años de experiencia en diversas áreas del derecho, ofrecemos representación legal
+                        de la más alta calidad. Nuestra misión es proteger sus derechos y obtener los mejores
+                        resultados posibles en cada caso.
+                    </p>
+                    <AuthorizeView>
+                        <NotAuthorized>
+                            <a class="btn" href="Account/Register">Comienza Ahora</a>
+                        </NotAuthorized>
+                    </AuthorizeView>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="service">
+    <div class="container">
+        <div class="section-header">
+            <h2>Nuestras Áreas de Práctica</h2>
+        </div>
+        <div class="row">
+            <div class="col-lg-4 col-md-6">
+                <div class="service-item">
+                    <div class="service-icon">
+                        <i class="fa fa-landmark"></i>
+                    </div>
+                    <h3>Derecho Civil</h3>
+                    <p>
+                        Representación en disputas civiles, contratos, daños y perjuicios,
+                        y asuntos relacionados con propiedad.
+                    </p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="service-item">
+                    <div class="service-icon">
+                        <i class="fa fa-gavel"></i>
+                    </div>
+                    <h3>Derecho Penal</h3>
+                    <p>
+                        Defensa experta en casos criminales, desde delitos menores hasta
+                        casos complejos de alto perfil.
+                    </p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="service-item">
+                    <div class="service-icon">
+                        <i class="fa fa-users"></i>
+                    </div>
+                    <h3>Derecho Familiar</h3>
+                    <p>
+                        Asistencia en divorcios, custodia de menores, adopciones y
+                        otros asuntos familiares sensibles.
+                    </p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="service-item">
+                    <div class="service-icon">
+                        <i class="fa fa-hand-holding-usd"></i>
+                    </div>
+                    <h3>Derecho Comercial</h3>
+                    <p>
+                        Asesoramiento integral para empresas, contratos comerciales,
+                        fusiones y adquisiciones.
+                    </p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="service-item">
+                    <div class="service-icon">
+                        <i class="fa fa-balance-scale"></i>
+                    </div>
+                    <h3>Derecho Laboral</h3>
+                    <p>
+                        Protección de derechos laborales, despidos injustificados,
+                        discriminación y acoso laboral.
+                    </p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="service-item">
+                    <div class="service-icon">
+                        <i class="fa fa-file-contract"></i>
+                    </div>
+                    <h3>Derecho Inmobiliario</h3>
+                    <p>
+                        Transacciones de bienes raíces, arrendamientos, disputas de propiedad
+                        y zonificación.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="feature">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-7">
+                <div class="section-header">
+                    <h2>¿Por Qué Elegirnos?</h2>
+                </div>
+                <div class="row counters">
+                    <div class="col-6">
+                        <i class="fa fa-user"></i>
+                        <div class="counters-text">
+                            <h2 data-toggle="counter-up">500</h2>
+                            <p>Clientes Satisfechos</p>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <i class="fa fa-gavel"></i>
+                        <div class="counters-text">
+                            <h2 data-toggle="counter-up">800</h2>
+                            <p>Casos Ganados</p>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <i class="fa fa-users"></i>
+                        <div class="counters-text">
+                            <h2 data-toggle="counter-up">25</h2>
+                            <p>Abogados Expertos</p>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <i class="fa fa-trophy"></i>
+                        <div class="counters-text">
+                            <h2 data-toggle="counter-up">50</h2>
+                            <p>Premios Ganados</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-5">
+                <div class="feature-img">
+                    <img src="img/feature.jpg" alt="Feature">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="team">
+    <div class="container">
+        <div class="section-header">
+            <h2>Nuestro Equipo Legal</h2>
+        </div>
+        <div class="row">
+            <div class="col-lg-3 col-md-6">
+                <div class="team-item">
+                    <div class="team-img">
+                        <img src="img/team-1.jpg" alt="Team Image">
+                    </div>
+                    <div class="team-text">
+                        <h2>Dr. Juan Pérez</h2>
+                        <p>Derecho Civil y Comercial</p>
+                        <div class="team-social">
+                            <a href=""><i class="fab fa-twitter"></i></a>
+                            <a href=""><i class="fab fa-facebook-f"></i></a>
+                            <a href=""><i class="fab fa-linkedin-in"></i></a>
+                            <a href=""><i class="fab fa-instagram"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="team-item">
+                    <div class="team-img">
+                        <img src="img/team-2.jpg" alt="Team Image">
+                    </div>
+                    <div class="team-text">
+                        <h2>Dra. María González</h2>
+                        <p>Derecho Penal</p>
+                        <div class="team-social">
+                            <a href=""><i class="fab fa-twitter"></i></a>
+                            <a href=""><i class="fab fa-facebook-f"></i></a>
+                            <a href=""><i class="fab fa-linkedin-in"></i></a>
+                            <a href=""><i class="fab fa-instagram"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="team-item">
+                    <div class="team-img">
+                        <img src="img/team-3.jpg" alt="Team Image">
+                    </div>
+                    <div class="team-text">
+                        <h2>Dr. Carlos Rodríguez</h2>
+                        <p>Derecho Familiar</p>
+                        <div class="team-social">
+                            <a href=""><i class="fab fa-twitter"></i></a>
+                            <a href=""><i class="fab fa-facebook-f"></i></a>
+                            <a href=""><i class="fab fa-linkedin-in"></i></a>
+                            <a href=""><i class="fab fa-instagram"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="team-item">
+                    <div class="team-img">
+                        <img src="img/team-4.jpg" alt="Team Image">
+                    </div>
+                    <div class="team-text">
+                        <h2>Dra. Ana Martínez</h2>
+                        <p>Derecho Laboral</p>
+                        <div class="team-social">
+                            <a href=""><i class="fab fa-twitter"></i></a>
+                            <a href=""><i class="fab fa-facebook-f"></i></a>
+                            <a href=""><i class="fab fa-linkedin-in"></i></a>
+                            <a href=""><i class="fab fa-instagram"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="faqs">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-5">
+                <div class="faqs-img">
+                    <img src="img/faqs.jpg" alt="Image">
+                </div>
+            </div>
+            <div class="col-md-7">
+                <div class="section-header">
+                    <h2>¿Tienes Preguntas?</h2>
+                </div>
+                <div id="accordion">
+                    <div class="card">
+                        <div class="card-header">
+                            <a class="card-link collapsed" data-toggle="collapse" href="#collapseOne" aria-expanded="true">
+                                ¿Cómo puedo agendar una consulta?
+                            </a>
+                        </div>
+                        <div id="collapseOne" class="collapse show" data-parent="#accordion">
+                            <div class="card-body">
+                                Puedes agendar una consulta registrándote en nuestro sistema y seleccionando un horario disponible en la sección de "Mis Citas".
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <a class="card-link" data-toggle="collapse" href="#collapseTwo">
+                                ¿Cuál es el costo de los servicios?
+                            </a>
+                        </div>
+                        <div id="collapseTwo" class="collapse" data-parent="#accordion">
+                            <div class="card-body">
+                                Los costos varían según el tipo de caso y la complejidad. Ofrecemos una consulta inicial gratuita para evaluar tu situación.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <a class="card-link" data-toggle="collapse" href="#collapseThree">
+                                ¿Cómo puedo dar seguimiento a mi caso?
+                            </a>
+                        </div>
+                        <div id="collapseThree" class="collapse" data-parent="#accordion">
+                            <div class="card-body">
+                                A través de nuestro sistema en línea, puedes ver el estado de tu caso, documentos.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <a class="card-link" data-toggle="collapse" href="#collapseFour">
+                                ¿Trabajan con casos en todo el país?
+                            </a>
+                        </div>
+                        <div id="collapseFour" class="collapse" data-parent="#accordion">
+                            <div class="card-body">
+                                Sí, tenemos capacidad para atender casos en todo el territorio nacional y contamos con aliados estratégicos en diferentes regiones.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <a class="card-link" data-toggle="collapse" href="#collapseFive">
+                                ¿Ofrecen servicios de emergencia?
+                            </a>
+                        </div>
+                        <div id="collapseFive" class="collapse" data-parent="#accordion">
+                            <div class="card-body">
+                                Sí, contamos con un servicio de atención de emergencias las 24 horas para casos urgentes que requieran atención inmediata.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@code{
+
+}
