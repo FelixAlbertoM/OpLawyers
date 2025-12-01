@@ -1,0 +1,83 @@
+﻿@page "/mis-casos"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using OpLawyers.Models
+@using OpLawyers.Services
+@attribute [Authorize(Roles = "Cliente")]
+@inject CasosService CasosService
+@inject ClientesService ClientesService
+@inject UserManager<Usuario> UserManager
+@inject AuthenticationStateProvider AuthProvider
+
+<PageTitle>Mis Casos</PageTitle>
+
+<div class="page-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <h2>Mis Casos Legales</h2>
+            </div>
+            <div class="col-12">
+                <a href="/">Inicio</a>
+                <a href="">Mis Casos</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Estado de Mis Casos</h2>
+        </div>
+        <h3>📁 Mis Casos</h3>
+
+        @if (loading)
+        {
+            <p>Cargando casos...</p>
+        }
+        else if (casos.Count == 0)
+        {
+            <p>No tienes casos registrados.</p>
+        }
+        else
+        {
+            <ul class="list-group">
+                @foreach (var caso in casos)
+                {
+                    <li class="list-group-item mb-2">
+                        <strong>ID de Caso: @caso.CasoId</strong><br />
+                        <strong>Estado:</strong> <span class="badge bg-info">@caso.Estado</span><br />
+                        <strong>Fecha de Apertura:</strong> @caso.FechaApertura.ToShortDateString()<br />
+                        <strong>Descripción:</strong> @(caso.Descripcion.Length > 100 ? caso.Descripcion.Substring(0, 100) + "..." : caso.Descripcion)
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+</div>
+
+@code {
+    private List<Caso> casos = new();
+    private bool loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var auth = await AuthProvider.GetAuthenticationStateAsync();
+        var user = auth.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            var usuario = await UserManager.GetUserAsync(user);
+            if (usuario != null)
+            {
+                var cliente = await ClientesService.ObtenerClientePorUsuarioIdAsync(usuario.Id);
+                if (cliente != null)
+                {
+                    casos = await CasosService.ConsultarCasosPorClienteAsync(cliente.ClienteId);
+                }
+            }
+        }
+        loading = false;
+    }
+}
