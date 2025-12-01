@@ -27,48 +27,57 @@ public class Contexto : IdentityDbContext<Usuario>
             {
                 Id = "1",
                 Name = "Administrador",
-                NormalizedName = "ADMINISTRADOR"
+                NormalizedName = "ADMINISTRADOR",
+                ConcurrencyStamp = ""
             },
             new IdentityRole
             {
                 Id = "2",
                 Name = "Cliente",
-                NormalizedName = "CLIENTE"
+                NormalizedName = "CLIENTE",
+                ConcurrencyStamp = ""
             }
         );
 
-        const string adminId = "admin-001";
-        const string adminEmail = "admin@admin.com";
-        const string adminPassword = "Admin123!";
-
         var adminUser = new Usuario
         {
-            Id = adminId,
-            UserName = adminEmail,
-            NormalizedUserName = adminEmail.ToUpper(),
-            Email = adminEmail,
-            NormalizedEmail = adminEmail.ToUpper(),
+            Id = "1",
+            UserName = "admin",
+            NormalizedUserName = "ADMIN",
+            Email = "admin@example.com",
+            NormalizedEmail = "ADMIN@EXAMPLE.COM",
             EmailConfirmed = true,
-            SecurityStamp = Guid.NewGuid().ToString()
+            SecurityStamp = "",
+            ConcurrencyStamp = ""
         };
 
-        adminUser.PasswordHash = new PasswordHasher<Usuario>().HashPassword(adminUser, adminPassword);
+        var normalUser = new Usuario
+        {
+            Id = "2",
+            UserName = "user",
+            NormalizedUserName = "USER",
+            Email = "user@example.com",
+            NormalizedEmail = "USER@EXAMPLE.COM",
+            EmailConfirmed = true,
+            SecurityStamp = "",
+            ConcurrencyStamp = ""
+        };
 
-        modelBuilder.Entity<Usuario>().HasData(adminUser);
+        adminUser.PasswordHash = "AQAAAAIAAYagAAAAEFckMSwoaIoT+i8P1dhWC0texCWXJM9vYogzvLShiaAto2Zb6owofXi1mYEpVcRZXA==";
+        normalUser.PasswordHash = "AQAAAAIAAYagAAAAEK+QewBCKQMQoqUkUtmVEdI7MpR/XuYJ/0mXH0qKCf+PspVsJ7/naNTI3TqhdJ4b7Q==";
+
+        modelBuilder.Entity<Usuario>().HasData(adminUser, normalUser);
 
         modelBuilder.Entity<IdentityUserRole<string>>().HasData(
-            new IdentityUserRole<string>
-            {
-                RoleId = "1",
-                UserId = adminId
-            }
+            new IdentityUserRole<string> { RoleId = "1", UserId = "1" },
+            new IdentityUserRole<string> { RoleId = "2", UserId = "2" }
         );
 
         modelBuilder.Entity<Administrador>().HasData(
             new Administrador
             {
                 AdministradorId = 1,
-                UsuarioId = adminId,
+                UsuarioId = "1",
                 Nombre = "Administrador Principal"
             }
         );
@@ -131,4 +140,6 @@ public class Contexto : IdentityDbContext<Usuario>
             .IsUnique()
             .HasDatabaseName("IX_HorarioDisponible_DiaHora");
     }
+
+
 }
