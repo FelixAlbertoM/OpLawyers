@@ -1,0 +1,443 @@
+﻿@page "/citas"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using OpLawyers.Models
+@using OpLawyers.Services
+@attribute [Authorize(Roles = "Cliente,Administrador")]
+@inject CitasService CitasService
+@inject HorariosService HorariosService
+@inject ClientesService ClientesService
+@inject UserManager<Usuario> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@rendermode InteractiveServer
+
+<PageTitle>Citas</PageTitle>
+
+<div class="page-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <h2>Gestion de Citas</h2>
+            </div>
+            <div class="col-12">
+                <a href="/">Inicio</a>
+                <a href="">Citas</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Administracion de Citas</h2>
+        </div>
+
+        @if (loading)
+        {
+            <p>Cargando...</p>
+        }
+        else
+        {
+            <div class="d-flex justify-content-end mb-3">
+                <button class="btn btn-primary" @onclick="MostrarFormularioNueva">Nueva Cita</button>
+            </div>
+
+            @if (mostrarFormulario)
+            {
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">@(citaEditando == null ? "Nueva Cita" : "Editar Cita")</h5>
+                        <EditForm Model="nuevaCita" OnValidSubmit="GuardarCita">
+                            <DataAnnotationsValidator />
+                            <ValidationSummary />
+
+                            @if (esAdmin)
+                            {
+                                <div class="mb-3">
+                                    <label class="form-label">Cliente:</label>
+                                    @if (citaEditando != null)
+                                    {
+                                        <input type="text" class="form-control" value="@ObtenerNombreCliente(nuevaCita.ClienteId)" readonly />
+                                    }
+                                    else
+                                    {
+                                        <select class="form-select" @bind="nuevaCita.ClienteId">
+                                            <option value="0">-- Seleccionar Cliente --</option>
+                                            @foreach (var c in clientes)
+                                            {
+                                                <option value="@c.ClienteId">@c.Nombre @c.Apellido</option>
+                                            }
+                                        </select>
+                                    }
+                                </div>
+                            }
+
+                            <div class="mb-3">
+                                <label class="form-label">Fecha:</label>
+                                <InputDate class="form-control" @bind-Value="fechaSeleccionada" @bind-Value:after="CargarHorariosDisponibles" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                                @if (esDomingo)
+                                {
+                                    <div class="alert alert-info mt-2">
+                                        ?? No trabajamos los domingos. Por favor selecciona otro día.
+                                    </div>
+                                }
+                            </div>
+
+                            @if (!esDomingo)
+                            {
+                                @if (horariosDisponibles.Any())
+                                {
+                                    <div class="mb-3">
+                                        <label class="form-label">Horario Disponible:</label>
+                                        <select class="form-select" @bind="horarioSeleccionadoId">
+                                            <option value="0">-- Seleccionar Horario --</option>
+                                            @foreach (var horario in horariosDisponibles)
+                                            {
+                                                <option value="@horario.HorarioId">
+                                                    @horario.HorarioFormateado
+                                                </option>
+                                            }
+                                        </select>
+                                    </div>
+                                }
+                                else if (fechaSeleccionada != default)
+                                {
+                                    <div class="alert alert-warning">
+                                        ?? No hay horarios disponibles para esta fecha. Todos los horarios están ocupados.
+                                    </div>
+                                }
+                            }
+
+                            <button type="submit" class="btn btn-success" disabled="@(!horariosDisponibles.Any() || horarioSeleccionadoId == 0 || esDomingo)">Guardar</button>
+                            <button type="button" class="btn btn-secondary" @onclick="CancelarFormulario">Cancelar</button>
+                        </EditForm>
+                    </div>
+                </div>
+            }
+
+            @if (mensaje != null)
+            {
+                <div class="alert @(esError ? "alert-danger" : "alert-success")">
+                    @mensaje
+                </div>
+            }
+
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        @if (esAdmin)
+                        {
+                            <th>Cliente</th>
+                        }
+                        <th>Fecha</th>
+                        <th>Horario</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var cita in citas)
+                    {
+                        <tr>
+                            @if (esAdmin)
+                            {
+                                <td>@cita.Cliente?.Nombre @cita.Cliente?.Apellido</td>
+                            }
+                            <td>@cita.Fecha.ToShortDateString()</td>
+                            <td>
+                                @if (cita.CitaDetalles.Any())
+                                {
+                                    var detalle = cita.CitaDetalles.First();
+                                    @if (detalle.Horario != null)
+                                    {
+                                        <span>@detalle.Horario.HorarioFormateado</span>
+                                    }
+                                    else
+                                    {
+                                        var inicio = DateTime.Today.Add(detalle.HoraInicio);
+                                        var fin = DateTime.Today.Add(detalle.HoraFin);
+                                        <span>@inicio.ToString("hh:mm tt") - @fin.ToString("hh:mm tt")</span>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Sin horario asignado</span>
+                                }
+                            </td>
+                            <td>
+                                <span class="badge @ObtenerClaseBadgeEstado(cita.Estado)">
+                                    @cita.Estado
+                                </span>
+                            </td>
+                            <td>
+                                @if (cita.Estado == "Pendiente")
+                                {
+                                    <button class="btn btn-sm btn-danger" @onclick="() => CancelarCita(cita.CitaId)">Cancelar</button>
+
+                                    @if (esAdmin)
+                                    {
+                                        <button class="btn btn-sm btn-success" @onclick="() => CompletarCita(cita.CitaId)">Completar</button>
+                                    }
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+
+@code {
+    private List<Cita> citas = new();
+    private Cita nuevaCita = new();
+    private Cita? citaEditando;
+    private bool mostrarFormulario = false;
+    private bool loading = true;
+    private string? mensaje;
+    private bool esError;
+    private int clienteId;
+    private bool esAdmin = false;
+    private List<Cliente> clientes = new();
+
+    private DateTime fechaSeleccionada = ObtenerSiguienteDiaHabil();
+    private List<HorarioDisponible> horariosDisponibles = new();
+    private int horarioSeleccionadoId = 0;
+    private bool esDomingo = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            var usuario = await UserManager.GetUserAsync(user);
+            if (usuario != null)
+            {
+                esAdmin = user.IsInRole("Administrador");
+
+                if (esAdmin)
+                {
+                    clientes = await ClientesService.ListarClientesAsync();
+                    citas = await CitasService.ListarTodasCitasAsync();
+                }
+                else
+                {
+                    var cliente = await ClientesService.ObtenerClientePorUsuarioIdAsync(usuario.Id);
+                    if (cliente != null)
+                    {
+                        clienteId = cliente.ClienteId;
+                        await CargarCitas();
+                    }
+                }
+            }
+        }
+
+        loading = false;
+    }
+
+    private static DateTime ObtenerSiguienteDiaHabil()
+    {
+        var fecha = DateTime.Today;
+
+        if (fecha.DayOfWeek == DayOfWeek.Saturday)
+        {
+            fecha = fecha.AddDays(2);
+        }
+        else if (fecha.DayOfWeek == DayOfWeek.Sunday)
+        {
+            fecha = fecha.AddDays(1);
+        }
+
+        return fecha;
+    }
+
+    private async Task CargarCitas()
+    {
+        if (esAdmin)
+        {
+            citas = await CitasService.ListarTodasCitasAsync();
+        }
+        else
+        {
+            citas = await CitasService.ListarPorClienteIdAsync(clienteId);
+        }
+    }
+
+    private async Task CargarHorariosDisponibles()
+    {
+        if (fechaSeleccionada != default)
+        {
+            esDomingo = fechaSeleccionada.DayOfWeek == DayOfWeek.Sunday;
+
+            if (esDomingo)
+            {
+                horariosDisponibles.Clear();
+                horarioSeleccionadoId = 0;
+                return;
+            }
+
+            horariosDisponibles = await HorariosService.ObtenerHorariosDisponiblesParaFechaAsync(fechaSeleccionada);
+            horarioSeleccionadoId = 0;
+        }
+    }
+
+    private async Task MostrarFormularioNueva()
+    {
+        nuevaCita = new Cita { Fecha = ObtenerSiguienteDiaHabil(), ClienteId = clienteId };
+        citaEditando = null;
+        mostrarFormulario = true;
+
+        fechaSeleccionada = ObtenerSiguienteDiaHabil();
+        esDomingo = fechaSeleccionada.DayOfWeek == DayOfWeek.Sunday;
+
+        horarioSeleccionadoId = 0;
+
+        if (!esDomingo)
+        {
+            await CargarHorariosDisponibles();
+        }
+        else
+        {
+            horariosDisponibles.Clear();
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task GuardarCita()
+    {
+        try
+        {
+            bool resultado;
+
+            if (!esAdmin)
+            {
+                nuevaCita.ClienteId = clienteId;
+            }
+
+            if (nuevaCita.ClienteId == 0)
+            {
+                mensaje = "Debe seleccionar un cliente.";
+                esError = true;
+                return;
+            }
+
+            if (horarioSeleccionadoId == 0)
+            {
+                mensaje = "Debe seleccionar un horario.";
+                esError = true;
+                return;
+            }
+
+            if (esDomingo)
+            {
+                mensaje = "No se pueden agendar citas los domingos.";
+                esError = true;
+                return;
+            }
+
+            nuevaCita.Fecha = fechaSeleccionada;
+            resultado = await CitasService.CrearCitaAsync(nuevaCita, horarioSeleccionadoId);
+
+            if (resultado)
+            {
+                mensaje = "Cita creada exitosamente.";
+                esError = false;
+                mostrarFormulario = false;
+                await CargarCitas();
+            }
+            else
+            {
+                mensaje = "Error al guardar la cita. El horario podría estar ocupado.";
+                esError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            mensaje = $"Error: {ex.Message}";
+            esError = true;
+        }
+    }
+
+    private void CancelarFormulario()
+    {
+        mostrarFormulario = false;
+        citaEditando = null;
+        nuevaCita = new Cita();
+        horariosDisponibles.Clear();
+        esDomingo = false;
+    }
+
+    private async Task CancelarCita(int citaId)
+    {
+        try
+        {
+            if (await CitasService.CancelarCitaAsync(citaId))
+            {
+                mensaje = "Cita cancelada exitosamente. El horario está nuevamente disponible.";
+                esError = false;
+                await CargarCitas();
+            }
+            else
+            {
+                mensaje = "Error al cancelar la cita.";
+                esError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            mensaje = $"Error al cancelar: {ex.Message}";
+            esError = true;
+        }
+    }
+
+    private async Task CompletarCita(int citaId)
+    {
+        if (!esAdmin)
+        {
+            mensaje = "Solo los administradores pueden marcar citas como completadas.";
+            esError = true;
+            return;
+        }
+
+        try
+        {
+            if (await CitasService.CompletarCitaAsync(citaId))
+            {
+                mensaje = "Cita completada exitosamente.";
+                esError = false;
+                await CargarCitas();
+            }
+            else
+            {
+                mensaje = "Error al completar la cita.";
+                esError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            mensaje = $"Error al completar: {ex.Message}";
+            esError = true;
+        }
+    }
+
+    private string ObtenerClaseBadgeEstado(string estado)
+    {
+        return estado switch
+        {
+            "Pendiente" => "bg-warning",
+            "Completada" => "bg-success",
+            "Cancelada" => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
+
+    private string ObtenerNombreCliente(int clienteId)
+    {
+        var cliente = clientes.FirstOrDefault(c => c.ClienteId == clienteId);
+        return cliente != null ? $"{cliente.Nombre} {cliente.Apellido}" : "Cliente no encontrado";
+    }
+}
