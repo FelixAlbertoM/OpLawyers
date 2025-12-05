@@ -87,16 +87,6 @@
                                     </label>
                                     <InputText class="form-control" @bind-Value="nuevoHorario.Descripcion" placeholder="Ej: Mañana, Tarde" />
                                 </div>
-
-                                <div class="col-md-4 mb-3">
-                                    <label>&nbsp;</label>
-                                    <div class="form-check">
-                                        <InputCheckbox class="form-check-input" @bind-Value="nuevoHorario.Activo" id="checkActivo" />
-                                        <label class="form-check-label" for="checkActivo">
-                                            Activo
-                                        </label>
-                                    </div>
-                                </div>
                             </div>
 
                             <div class="row">
@@ -159,10 +149,6 @@
                                                         @horario.Descripcion
                                                     </p>
                                                 }
-                                                @if (!horario.Activo)
-                                                {
-                                                    <span class="badge badge-cerrado mt-2">Inactivo</span>
-                                                }
                                             </div>
                                             <button class="btn btn-sm" style="background: #dc3545; color: #fff; border: none; padding: 5px 10px;" @onclick="() => EliminarHorario(horario.HorarioId)">
                                                 <i class="fa fa-trash"></i>
@@ -203,7 +189,7 @@
 
     private void MostrarFormularioNuevo()
     {
-        nuevoHorario = new HorarioDisponible { DiaSemana = 1, Activo = true };
+        nuevoHorario = new HorarioDisponible { DiaSemana = 1 };
         horarioEditando = null;
         mostrarFormulario = true;
         horaInicioDateTime = DateTime.Today.AddHours(8);
@@ -264,7 +250,7 @@
         {
             if (await HorariosService.EliminarHorarioAsync(horarioId))
             {
-                mensaje = "Horario eliminado/desactivado exitosamente.";
+                mensaje = "Horario eliminado exitosamente.";
                 esError = false;
                 await CargarHorarios();
             }
