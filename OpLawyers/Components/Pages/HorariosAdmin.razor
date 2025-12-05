@@ -27,7 +27,8 @@
         <div class="section-header">
             <h2>Horarios Disponibles</h2>
         </div>
-
+        <div class="card mb-4">
+            <div class="card-body">
         <div class="row mb-4">
             <div class="col-12">
                 <button class="btn-kanun-primary mr-3" @onclick="MostrarFormularioNuevo">
@@ -60,7 +61,6 @@
                                         <option value="4">Jueves</option>
                                         <option value="5">Viernes</option>
                                         <option value="6">Sábado</option>
-                                        <option value="7">Domingo</option>
                                     </InputSelect>
                                     <ValidationMessage For="@(() => nuevoHorario.DiaSemana)" />
                                 </div>
@@ -114,7 +114,7 @@
         }
 
         <div class="row">
-            @for (int dia = 1; dia <= 7; dia++)
+            @for (int dia = 1; dia <= 6; dia++)
             {
                 var diaSemana = dia;
                 var horariosDelDia = horarios.Where(h => h.DiaSemana == diaSemana).ToList();
@@ -137,15 +137,15 @@
                             <div style="max-height: 400px; overflow-y: auto;">
                                 @foreach (var horario in horariosDelDia.OrderBy(h => h.HoraInicio))
                                 {
-                                    <div class="mb-3 p-3" style="background: #000000; border: 1px solid #aa9166; border-radius: 5px;">
+                                            <div class="mb-3 p-3" style="background: #aa9166; border: 1px solid #000000; border-radius: 5px;">
                                         <div class="d-flex justify-content-between align-items-start">
                                             <div>
-                                                <strong style="color: #aa9166; font-size: 16px;">
+                                                <strong style="color: #000000; font-size: 16px;">
                                                     <i class="fa fa-clock mr-2"></i>@horario.HorarioFormateado
                                                 </strong>
                                                 @if (!string.IsNullOrEmpty(horario.Descripcion))
                                                 {
-                                                    <p class="mb-0 mt-2" style="color: #ffffff; font-size: 14px;">
+                                                    <p class="mb-0 mt-2" style="color: #000000; font-size: 14px;">
                                                         @horario.Descripcion
                                                     </p>
                                                 }
@@ -161,6 +161,8 @@
                     </div>
                 </div>
             }
+        </div>
+        </div>
         </div>
     </div>
 </div>
@@ -300,8 +302,6 @@
             4 => "Jueves",
             5 => "Viernes",
             6 => "Sábado",
-            7 => "Domingo",
-            _ => "Desconocido"
         };
     }
 }
