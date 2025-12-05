@@ -17,8 +17,6 @@ public class HorarioDisponible
     [Required(ErrorMessage = "La hora de fin es requerida")]
     public TimeSpan HoraFin { get; set; }
 
-    public bool Activo { get; set; } = true;
-
     [StringLength(50)]
     public string? Descripcion { get; set; }
 
