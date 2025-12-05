@@ -29,7 +29,7 @@ namespace OpLawyers.Services
 
         public async Task<List<HorarioDisponible>> ObtenerHorariosDisponiblesParaFechaAsync(DateTime fecha)
         {
-            int diaSemana = fecha.DayOfWeek == DayOfWeek.Sunday ? 7 : (int)fecha.DayOfWeek;
+            int diaSemana = fecha.DayOfWeek == DayOfWeek.Sunday ? 6 : (int)fecha.DayOfWeek;
             var fechaSolo = fecha.Date;
 
             var horariosBloquedos = await _contexto.CitaDetalles
