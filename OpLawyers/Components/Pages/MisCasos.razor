@@ -3,11 +3,12 @@
 @using Microsoft.AspNetCore.Identity
 @using OpLawyers.Models
 @using OpLawyers.Services
-@attribute [Authorize(Roles = "Cliente")]
+@attribute [Authorize(Roles = "Cliente,Administrador")]  
 @inject CasosService CasosService
 @inject ClientesService ClientesService
 @inject UserManager<Usuario> UserManager
 @inject AuthenticationStateProvider AuthProvider
+@inject NavigationManager NavigationManager
 
 
 <PageTitle>Mis Casos</PageTitle>

@@ -5,7 +5,7 @@
 namespace OpLawyers.Migrations
 {
     /// <inheritdoc />
-    public partial class inicial100 : Migration
+    public partial class Launica5 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

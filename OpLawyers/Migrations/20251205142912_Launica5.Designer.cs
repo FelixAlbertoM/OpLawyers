@@ -12,8 +12,8 @@ using OpLawyers.DAL;
 namespace OpLawyers.Migrations
 {
     [DbContext(typeof(Contexto))]
-    [Migration("20251201094309_inicial100")]
-    partial class inicial100
+    [Migration("20251205142912_Launica5")]
+    partial class Launica5
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

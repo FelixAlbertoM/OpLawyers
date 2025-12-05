@@ -22,14 +22,14 @@ namespace OpLawyers.Services
         public async Task<List<HorarioDisponible>> ListarHorariosPorDiaAsync(int diaSemana)
         {
             return await _contexto.HorariosDisponibles
-                .Where(h => h.DiaSemana == diaSemana && h.Activo)
+                .Where(h => h.DiaSemana == diaSemana)
                 .OrderBy(h => h.HoraInicio)
                 .ToListAsync();
         }
 
         public async Task<List<HorarioDisponible>> ObtenerHorariosDisponiblesParaFechaAsync(DateTime fecha)
         {
-            int diaSemana = fecha.DayOfWeek == DayOfWeek.Sunday ? 7 : (int)fecha.DayOfWeek;
+            int diaSemana = fecha.DayOfWeek == DayOfWeek.Sunday ? 6 : (int)fecha.DayOfWeek;
             var fechaSolo = fecha.Date;
 
             var horariosBloquedos = await _contexto.CitaDetalles
@@ -39,7 +39,6 @@ namespace OpLawyers.Services
 
             return await _contexto.HorariosDisponibles
                 .Where(h => h.DiaSemana == diaSemana
-                         && h.Activo
                          && !horariosBloquedos.Contains(h.HorarioId))
                 .OrderBy(h => h.HoraInicio)
                 .ToListAsync();
@@ -98,12 +97,6 @@ namespace OpLawyers.Services
                 if (horario == null)
                     return false;
 
-                if (horario.CitasDetalles.Any())
-                {
-                    horario.Activo = false;
-                    await _contexto.SaveChangesAsync();
-                    return true;
-                }
                 _contexto.HorariosDisponibles.Remove(horario);
                 await _contexto.SaveChangesAsync();
                 return true;
@@ -113,6 +106,7 @@ namespace OpLawyers.Services
                 return false;
             }
         }
+
         public async Task<HorarioDisponible?> ObtenerHorarioPorIdAsync(int horarioId)
         {
             return await _contexto.HorariosDisponibles
@@ -137,7 +131,6 @@ namespace OpLawyers.Services
                             DiaSemana = dia,
                             HoraInicio = new TimeSpan(hora, 0, 0),
                             HoraFin = new TimeSpan(hora + 1, 0, 0),
-                            Activo = true,
                             Descripcion = hora < 12 ? "Mañana" : "Tarde"
                         });
                     }

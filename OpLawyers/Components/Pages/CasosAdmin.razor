@@ -31,156 +31,160 @@
         <div class="section-header">
             <h2>Administración de Casos</h2>
         </div>
-        @if (loading)
-        {
-            <p>Cargando...</p>
-        }
-        else
-        {
-            <div class="d-flex justify-content-end mb-3">
-                <button class="btn-op" @onclick="MostrarFormularioNuevo">Nuevo Caso</button>
-            </div>
-
-            @if (mostrarFormulario)
-            {
-                <div class="card mb-3 shadow-sm">
-                    <div class="card-body">
-                        <h5 class="mb-3">@(casoEditando == null ? "Nuevo Caso" : "Editar Caso")</h5>
-
-                        <EditForm Model="nuevoCaso" OnValidSubmit="GuardarCaso">
-                            <DataAnnotationsValidator />
-                            <ValidationSummary />
-
-                            <div class="mb-3">
-                                <label>Cliente</label>
-                                <select class="form-select" @bind="nuevoCaso.ClienteId">
-                                    <option value="0">-- Seleccionar Cliente --</option>
-                                    @foreach (var c in clientes)
-                                    {
-                                        <option value="@c.ClienteId">
-                                            @c.Nombre @c.Apellido - @c.Usuario.Email
-                                        </option>
-                                    }
-                                </select>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Descripción:</label>
-                                <InputTextArea class="form-control" @bind-Value="nuevoCaso.Descripcion" rows="4" />
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Estado:</label>
-                                <InputSelect class="form-select" @bind-Value="nuevoCaso.Estado">
-                                    <option value="Abierto">Abierto</option>
-                                    <option value="En Proceso">En Proceso</option>
-                                    <option value="Cerrado">Cerrado</option>
-                                    <option value="Archivado">Archivado</option>
-                                </InputSelect>
-                            </div>
-
-                            <button type="submit" class="btn btn-success">Guardar</button>
-                            <button type="button" class="btn btn-secondary" @onclick="CancelarFormulario">Cancelar</button>
-                        </EditForm>
+        <div class="card mb-4">
+            <div class="card-body">
+                @if (loading)
+                {
+                    <p>Cargando...</p>
+                }
+                else
+                {
+                    <div class="d-flex justify-content-end mb-3">
+                        <button class="btn-op" @onclick="MostrarFormularioNuevo">Nuevo Caso</button>
                     </div>
-                </div>
-            }
 
-            @if (mostrarFormularioDetalle && casoSeleccionado != null)
-            {
-                <div class="card mb-3 shadow-sm">
-                    <div class="card-body">
-                        <h5>Agregar Detalle al Caso #@casoSeleccionado.CasoId</h5>
-
-                        <EditForm Model="nuevoDetalle" OnValidSubmit="GuardarDetalle">
-                            <DataAnnotationsValidator />
-
-                            <div class="mb-3">
-                                <label class="form-label">Descripción:</label>
-                                <InputTextArea class="form-control" @bind-Value="nuevoDetalle.Descripcion" rows="3" />
-                                <ValidationMessage For="@(() => nuevoDetalle.Descripcion)" />
-                            </div>
-
-                            <button type="submit" class="btn btn-success">Agregar Detalle</button>
-                            <button type="button" class="btn btn-secondary" @onclick="CancelarFormularioDetalle">Cancelar</button>
-                        </EditForm>
-                    </div>
-                </div>
-            }
-
-            @if (mensaje != null)
-            {
-                <div class="alert @(esError ? "alert-danger" : "alert-success") alert-dismissible fade show">
-                    @mensaje
-                    <button type="button" class="btn-close" @onclick="() => mensaje = null"></button>
-                </div>
-            }
-
-            <table class="table table-op table-striped align-middle">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Cliente</th>
-                        <th>Fecha Apertura</th>
-                        <th>Estado</th>
-                        <th>Descripción</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var caso in casos)
+                    @if (mostrarFormulario)
                     {
-                        <tr>
-                            <td>@caso.CasoId</td>
-                            <td>@caso.Cliente.Nombre @caso.Cliente.Apellido</td>
-                            <td>@caso.FechaApertura.ToShortDateString()</td>
-                            <td>
-                                <span class="badge @ObtenerClaseBadgeEstado(caso.Estado)">
-                                    @caso.Estado
-                                </span>
-                            </td>
-                            <td>@(caso.Descripcion.Length > 50 ? caso.Descripcion.Substring(0, 50) + "..." : caso.Descripcion)</td>
-                            <td>
-                                <button class="btn btn-sm btn-info" @onclick="() => VerDetalles(caso.CasoId)">Ver</button>
-                                <button class="btn btn-sm btn-warning" @onclick="() => EditarCaso(caso)">Editar</button>
-                                <button class="btn btn-sm btn-success" @onclick="() => MostrarFormularioDetalleParaCaso(caso)">+ Detalle</button>
-                            </td>
-                        </tr>
+                        <div class="card mb-3 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="mb-3">@(casoEditando == null ? "Nuevo Caso" : "Editar Caso")</h5>
 
-                        @if (casoExpandido == caso.CasoId)
-                        {
-                            <tr>
-                                <td colspan="6">
-                                    <div class="case-details-box">
-                                        <h6>Detalles del Caso</h6>
-                                        <p><strong>Descripción completa:</strong> @caso.Descripcion</p>
-                                        <p><strong>Cliente:</strong> @caso.Cliente.Nombre @caso.Cliente.Apellido</p>
-                                        <p><strong>Email:</strong> @caso.Cliente.Usuario?.Email</p>
+                                <EditForm Model="nuevoCaso" OnValidSubmit="GuardarCaso">
+                                    <DataAnnotationsValidator />
+                                    <ValidationSummary />
 
-                                        @if (caso.CasoDetalles != null && caso.CasoDetalles.Any())
-                                        {
-                                            <h6 class="mt-3">Historial de Actualizaciones:</h6>
-                                            <ul class="list-group">
-                                                @foreach (var detalle in caso.CasoDetalles.OrderByDescending(d => d.Fecha))
-                                                {
-                                                    <li class="list-group-item">
-                                                        <strong>@detalle.Fecha.ToString("dd/MM/yyyy HH:mm"):</strong> @detalle.Descripcion
-                                                    </li>
-                                                }
-                                            </ul>
-                                        }
-                                        else
-                                        {
-                                            <p class="text-muted mt-3">No hay actualizaciones en el historial.</p>
-                                        }
+                                    <div class="mb-3">
+                                        <label>Cliente</label>
+                                        <select class="form-select" @bind="nuevoCaso.ClienteId">
+                                            <option value="0">-- Seleccionar Cliente --</option>
+                                            @foreach (var c in clientes)
+                                            {
+                                                <option value="@c.ClienteId">
+                                                    @c.Nombre @c.Apellido - @c.Usuario.Email
+                                                </option>
+                                            }
+                                        </select>
                                     </div>
-                                </td>
-                            </tr>
-                        }
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Descripción:</label>
+                                        <InputTextArea class="form-control" @bind-Value="nuevoCaso.Descripcion" rows="4" />
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Estado:</label>
+                                        <InputSelect class="form-select" @bind-Value="nuevoCaso.Estado">
+                                            <option value="Abierto">Abierto</option>
+                                            <option value="En Proceso">En Proceso</option>
+                                            <option value="Cerrado">Cerrado</option>
+                                            <option value="Archivado">Archivado</option>
+                                        </InputSelect>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-success">Guardar</button>
+                                    <button type="button" class="btn btn-secondary" @onclick="CancelarFormulario">Cancelar</button>
+                                </EditForm>
+                            </div>
+                        </div>
                     }
-                </tbody>
-            </table>
-        }
+
+                    @if (mostrarFormularioDetalle && casoSeleccionado != null)
+                    {
+                        <div class="card mb-3 shadow-sm">
+                            <div class="card-body">
+                                <h5>Agregar Detalle al Caso #@casoSeleccionado.CasoId</h5>
+
+                                <EditForm Model="nuevoDetalle" OnValidSubmit="GuardarDetalle">
+                                    <DataAnnotationsValidator />
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Descripción:</label>
+                                        <InputTextArea class="form-control" @bind-Value="nuevoDetalle.Descripcion" rows="3" />
+                                        <ValidationMessage For="@(() => nuevoDetalle.Descripcion)" />
+                                    </div>
+
+                                    <button type="submit" class="btn btn-success">Agregar Detalle</button>
+                                    <button type="button" class="btn btn-secondary" @onclick="CancelarFormularioDetalle">Cancelar</button>
+                                </EditForm>
+                            </div>
+                        </div>
+                    }
+
+                    @if (mensaje != null)
+                    {
+                        <div class="alert @(esError ? "alert-danger" : "alert-success") alert-dismissible fade show">
+                            @mensaje
+                            <button type="button" class="btn-close" @onclick="() => mensaje = null"></button>
+                        </div>
+                    }
+
+                    <table class="table table-op table-striped align-middle">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Cliente</th>
+                                <th>Fecha Apertura</th>
+                                <th>Estado</th>
+                                <th>Descripción</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var caso in casos)
+                            {
+                                <tr>
+                                    <td>@caso.CasoId</td>
+                                    <td>@caso.Cliente.Nombre @caso.Cliente.Apellido</td>
+                                    <td>@caso.FechaApertura.ToShortDateString()</td>
+                                    <td>
+                                        <span class="badge @ObtenerClaseBadgeEstado(caso.Estado)">
+                                            @caso.Estado
+                                        </span>
+                                    </td>
+                                    <td>@(caso.Descripcion.Length > 50 ? caso.Descripcion.Substring(0, 50) + "..." : caso.Descripcion)</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-info" @onclick="() => VerDetalles(caso.CasoId)">Ver</button>
+                                        <button class="btn btn-sm btn-warning" @onclick="() => EditarCaso(caso)">Editar</button>
+                                        <button class="btn btn-sm btn-success" @onclick="() => MostrarFormularioDetalleParaCaso(caso)">+ Detalle</button>
+                                    </td>
+                                </tr>
+
+                                @if (casoExpandido == caso.CasoId)
+                                {
+                                    <tr>
+                                        <td colspan="6">
+                                            <div class="case-details-box">
+                                                <h6>Detalles del Caso</h6>
+                                                <p><strong>Descripción completa:</strong> @caso.Descripcion</p>
+                                                <p><strong>Cliente:</strong> @caso.Cliente.Nombre @caso.Cliente.Apellido</p>
+                                                <p><strong>Email:</strong> @caso.Cliente.Usuario?.Email</p>
+
+                                                @if (caso.CasoDetalles != null && caso.CasoDetalles.Any())
+                                                {
+                                                    <h6 class="mt-3">Historial de Actualizaciones:</h6>
+                                                    <ul class="list-group">
+                                                        @foreach (var detalle in caso.CasoDetalles.OrderByDescending(d => d.Fecha))
+                                                        {
+                                                            <li class="list-group-item">
+                                                                <strong>@detalle.Fecha.ToString("dd/MM/yyyy HH:mm"):</strong> @detalle.Descripcion
+                                                            </li>
+                                                        }
+                                                    </ul>
+                                                }
+                                                else
+                                                {
+                                                    <p class="text-muted mt-3">No hay actualizaciones en el historial.</p>
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
     </div>
 </div>
 
