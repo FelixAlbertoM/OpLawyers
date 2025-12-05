@@ -14,11 +14,6 @@
     }
 </style>
 <div id="carousel" class="carousel slide" data-ride="carousel">
-    <ol class="carousel-indicators">
-        <li data-target="#carousel" data-slide-to="0" class="active"></li>
-        <li data-target="#carousel" data-slide-to="1"></li>
-        <li data-target="#carousel" data-slide-to="2"></li>
-    </ol>
     <div class="carousel-inner">
         <div class="carousel-item active">
             <img src="img/carousel-1.jpg" alt="Carousel Image">
@@ -29,46 +24,20 @@
                     <NotAuthorized>
                         <a class="btn animated fadeInUp" href="Account/Register">Regístrate Ahora</a>
                     </NotAuthorized>
+                </AuthorizeView>
+                <AuthorizeView Roles="Administrador">
+                    <Authorized>
+                        <a class="btn animated fadeInUp" href="/casos/admin">Gestión de Casos</a>
+                    </Authorized>
+                </AuthorizeView>
+                <AuthorizeView Roles="Cliente">
                     <Authorized>
                         <a class="btn animated fadeInUp" href="/mis-casos">Ver Mis Casos</a>
                     </Authorized>
                 </AuthorizeView>
             </div>
         </div>
-
-        <div class="carousel-item">
-            <img src="img/carousel-2.jpg" alt="Carousel Image">
-            <div class="carousel-caption">
-                <h1 class="animated fadeInLeft">Experiencia Legal Confiable</h1>
-                <p class="animated fadeInRight">Más de 20 años defendiendo tus intereses</p>
-                <AuthorizeView>
-                    <NotAuthorized>
-                        <a class="btn animated fadeInUp" href="Account/Login">Iniciar Sesión</a>
-                    </NotAuthorized>
-                    <Authorized>
-                        <a class="btn animated fadeInUp" href="/citas-cliente">Agendar Cita</a>
-                    </Authorized>
-                </AuthorizeView>
-            </div>
-        </div>
-
-        <div class="carousel-item">
-            <img src="img/carousel-3.jpg" alt="Carousel Image">
-            <div class="carousel-caption">
-                <h1 class="animated fadeInLeft">Protegemos Tu Futuro</h1>
-                <p class="animated fadeInRight">Asesoría legal profesional cuando más lo necesitas</p>
-            </div>
-        </div>
     </div>
-
-    <a class="carousel-control-prev" href="#carousel" role="button" data-slide="prev">
-        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-        <span class="sr-only">Anterior</span>
-    </a>
-    <a class="carousel-control-next" href="#carousel" role="button" data-slide="next">
-        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-        <span class="sr-only">Siguiente</span>
-    </a>
 </div>
 <div class="about">
     <div class="container">
@@ -300,84 +269,6 @@
                             <a href=""><i class="fab fa-facebook-f"></i></a>
                             <a href=""><i class="fab fa-linkedin-in"></i></a>
                             <a href=""><i class="fab fa-instagram"></i></a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-<div class="faqs">
-    <div class="container">
-        <div class="row">
-            <div class="col-md-5">
-                <div class="faqs-img">
-                    <img src="img/faqs.jpg" alt="Image">
-                </div>
-            </div>
-            <div class="col-md-7">
-                <div class="section-header">
-                    <h2>¿Tienes Preguntas?</h2>
-                </div>
-                <div id="accordion">
-                    <div class="card">
-                        <div class="card-header">
-                            <a class="card-link collapsed" data-toggle="collapse" href="#collapseOne" aria-expanded="true">
-                                ¿Cómo puedo agendar una consulta?
-                            </a>
-                        </div>
-                        <div id="collapseOne" class="collapse show" data-parent="#accordion">
-                            <div class="card-body">
-                                Puedes agendar una consulta registrándote en nuestro sistema y seleccionando un horario disponible en la sección de "Mis Citas".
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <div class="card-header">
-                            <a class="card-link" data-toggle="collapse" href="#collapseTwo">
-                                ¿Cuál es el costo de los servicios?
-                            </a>
-                        </div>
-                        <div id="collapseTwo" class="collapse" data-parent="#accordion">
-                            <div class="card-body">
-                                Los costos varían según el tipo de caso y la complejidad. Ofrecemos una consulta inicial gratuita para evaluar tu situación.
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <div class="card-header">
-                            <a class="card-link" data-toggle="collapse" href="#collapseThree">
-                                ¿Cómo puedo dar seguimiento a mi caso?
-                            </a>
-                        </div>
-                        <div id="collapseThree" class="collapse" data-parent="#accordion">
-                            <div class="card-body">
-                                A través de nuestro sistema en línea, puedes ver el estado de tu caso, documentos.
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <div class="card-header">
-                            <a class="card-link" data-toggle="collapse" href="#collapseFour">
-                                ¿Trabajan con casos en todo el país?
-                            </a>
-                        </div>
-                        <div id="collapseFour" class="collapse" data-parent="#accordion">
-                            <div class="card-body">
-                                Sí, tenemos capacidad para atender casos en todo el territorio nacional y contamos con aliados estratégicos en diferentes regiones.
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <div class="card-header">
-                            <a class="card-link" data-toggle="collapse" href="#collapseFive">
-                                ¿Ofrecen servicios de emergencia?
-                            </a>
-                        </div>
-                        <div id="collapseFive" class="collapse" data-parent="#accordion">
-                            <div class="card-body">
-                                Sí, contamos con un servicio de atención de emergencias las 24 horas para casos urgentes que requieran atención inmediata.
-                            </div>
                         </div>
                     </div>
                 </div>
